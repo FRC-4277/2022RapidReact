@@ -1,3 +1,5 @@
 # 2022RapidReact
 
-I haven't the foggiest idea what is going on -Toomy
+We will put important things here when we have them but for now you're stuck with me -Toomy
+
+###### BIG TEXT YEEEEEAAAAAAAAAA

@@ -29,6 +29,7 @@ public class DriveTrain extends SubsystemBase {
 
   /** Creates a new DriveTrain. */
   public DriveTrain() {
+    drive.setSafetyEnabled(false);
     //this code resets the motors everytime it runs.
     frontLeftMotor.configFactoryDefault();
     frontRightMotor.configFactoryDefault();

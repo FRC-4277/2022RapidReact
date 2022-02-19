@@ -33,4 +33,9 @@ public class Constants {
         public static final double PID_I = 0;
         public static final double PID_D = 0;
     }
+
+    public static class BallManipulator {
+        public static final int MOTOR = 6;
+    }
+    }
 }

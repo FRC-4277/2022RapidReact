@@ -12,7 +12,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import static frc.robot.Constants.BallManipulator.*;
 
 public class BallManipulator extends SubsystemBase {
-  private static final double INTAKE_SPEED = 1;
+  private static final double INTAKE_SPEED = 0.5;
   private static final double SHOOT_SPEED = 1;
   private TalonSRX motor = new TalonSRX(MOTOR);
 
@@ -28,6 +28,10 @@ public class BallManipulator extends SubsystemBase {
 
   public void shoot() {
     motor.set(ControlMode.PercentOutput, -SHOOT_SPEED);
+  }
+
+  public void stop() {
+    motor.set(ControlMode.PercentOutput, 0);
   }
 
   @Override

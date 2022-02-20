@@ -5,6 +5,8 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix.motorcontrol.ControlMode;
+import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
+import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXInvertType;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
@@ -15,13 +17,18 @@ import static frc.robot.Constants.Arm.*;
 
 public class Arm extends SubsystemBase {
   public static final double SPEED = 0.25;
+  public static final double SLOW_ZONE_DEGREES = 10; // Slow down within 10 degrees of end
+  public static final double SLOW_SPEED = 0.10;
   private TalonFX motor = new TalonFX(MOTOR);
 
   /** Creates a new Arm. */
   public Arm() {
     motor.configFactoryDefault();
-    motor.setInverted(TalonFXInvertType.Clockwise);
+    motor.setInverted(TalonFXInvertType.CounterClockwise);
     motor.setNeutralMode(NeutralMode.Brake);
+
+    motor.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen);
+    motor.configClearPositionOnLimitR(true, 100); //100 ms timeout
   
     motor.configMotionCruiseVelocity(CRUISE_VELOCITY_NATIVE);
     motor.configMotionAcceleration(CRUISE_ACCELERATION_NATIVE);
@@ -38,11 +45,15 @@ public class Arm extends SubsystemBase {
   }
 
   public void moveDownManual() {
-    motor.set(ControlMode.PercentOutput, SPEED);
+    motor.set(ControlMode.PercentOutput, -SPEED);
+  }
+
+  public void moveDownManualSlow() {
+    motor.set(ControlMode.PercentOutput, -SLOW_SPEED);
   }
 
   public void moveUpManual() {
-    motor.set(ControlMode.PercentOutput, -SPEED);
+    motor.set(ControlMode.PercentOutput, SPEED);
   }
 
   public void moveManual(ArmDirection direction) {
@@ -61,12 +72,28 @@ public class Arm extends SubsystemBase {
   }
 
   public void moveDownAutomatic() {
+    if (getPositionDegrees() <= 10) {
+      moveDownManualSlow();
+    } else {
+      motor.set(ControlMode.MotionMagic, 0);
+    }
+  }
+
+  public double getPositionRotations() {
+    return sensorUnitsToRotations(motor.getSelectedSensorPosition());
+  }
+
+  public double getPositionDegrees() {
+    return getPositionRotations() * 360;
+  }
+
+  public void moveUpAutomatic() {
     int setpoint = rotationsToSensorUnits(DESIRED_ROTATIONS);
     motor.set(ControlMode.MotionMagic, setpoint);
   }
 
-  public void moveUpAutomatic() {
-    motor.set(ControlMode.MotionMagic, 0);
+  public boolean isBottomedOut() {
+    return motor.isRevLimitSwitchClosed() == 1;
   }
 
   public void moveAutomatic(ArmDirection direction) {
@@ -80,8 +107,8 @@ public class Arm extends SubsystemBase {
     }
   }
 
-  public double sensorUnitsToRotations(int sensorUnits) {
-    return ((double) sensorUnits / TALON_UNITS_PER_REV) / GEARING;
+  public double sensorUnitsToRotations(double sensorUnits) {
+    return (sensorUnits / TALON_UNITS_PER_REV) / GEARING;
   }
 
   public int rotationsToSensorUnits(double rotations) {

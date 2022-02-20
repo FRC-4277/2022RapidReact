@@ -22,7 +22,7 @@ public class Constants {
         public static final int TALON_UNITS_PER_REV = 2048;
         public static final int GEARING = 16 * 5; // 16 from VersaPlanetary, 5 from Sprockets
         // Motion Magic
-        public static final int CRUISE_VELOCITY_RPM = 6380 / 2; // half free speed
+        public static final int CRUISE_VELOCITY_RPM = 6380 / 8; // eighth free speed
         public static final int CRUISE_VELOCITY_NATIVE = CRUISE_VELOCITY_RPM * 60 * TALON_UNITS_PER_REV / 10;
         public static final int CRUISE_ACCELERATION_NATIVE = (int) Math.round(CRUISE_VELOCITY_NATIVE / 0.5); // 0.5 secs to reach cruise velocity
         public static final int S_CURVE_SMOOTHING = 5;
@@ -37,5 +37,5 @@ public class Constants {
     public static class BallManipulator {
         public static final int MOTOR = 6;
     }
-    }
+    
 }

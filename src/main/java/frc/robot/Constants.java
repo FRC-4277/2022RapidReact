@@ -4,6 +4,9 @@
 
 package frc.robot;
 
+import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+
 /** Add your docs here. */
 public class Constants {
     public static class Joysticks {
@@ -29,10 +32,14 @@ public class Constants {
         public static final int S_CURVE_SMOOTHING = 5;
         public static final double DESIRED_DEGREES = 60; // 68.37 in robot CAD
         public static final double DESIRED_ROTATIONS = DESIRED_DEGREES / 360;
-        // Motion Magic Velocity PID
-        public static final double PID_P = 0.03;
+        // Position PID
+        public static final double PID_P = 0.01;
         public static final double PID_I = 0;
         public static final double PID_D = 0;
+        // PID Feedforward
+        public static final TrapezoidProfile.Constraints TRAPEZOID_CONSTRAINTS = new TrapezoidProfile.Constraints(0.25, 0.5); // rad/s and rad/s^2
+        public static final ArmFeedforward FEEDFORWARD = new ArmFeedforward(0, 0, 0); // Feedforward TODO
+
     }
 
     public static class BallManipulator {

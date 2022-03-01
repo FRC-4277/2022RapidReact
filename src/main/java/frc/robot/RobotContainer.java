@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.ArmAutoMoveCommand;
+import frc.robot.commands.ArmManualHoldCommand;
 import frc.robot.commands.ArmManualMoveCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.JoystickDriveCommand;
@@ -37,6 +38,8 @@ public class RobotContainer {
     private ArmAutoMoveCommand armAutoDownCommand = new ArmAutoMoveCommand(arm, ArmDirection.DOWN);
     private ArmManualMoveCommand armManualUpCommand = new ArmManualMoveCommand(arm, ArmDirection.UP);
     private ArmManualMoveCommand armManualDownCommand = new ArmManualMoveCommand(arm, ArmDirection.DOWN);
+    private ArmManualHoldCommand armManualHoldUpCommand = new ArmManualHoldCommand(arm, ArmDirection.UP);
+    private ArmManualHoldCommand armManualHoldDownCommand = new ArmManualHoldCommand(arm, ArmDirection.DOWN);
 
     private IntakeCommand intakeCommand = new IntakeCommand(ballManipulator);
     private ShootCommand shootCommand = new ShootCommand(ballManipulator);
@@ -62,6 +65,10 @@ public class RobotContainer {
         upPOV.whenHeld(armManualUpCommand);
         POVButton downPOV = new POVButton(xboxController, 180);
         downPOV.whenHeld(armManualDownCommand);
+        POVButton leftPOV = new POVButton(xboxController, 270);
+        leftPOV.whenPressed(armManualHoldDownCommand);
+        POVButton rightPOV = new POVButton(xboxController, 90);
+        rightPOV.whenPressed(armManualHoldUpCommand);
 
         JoystickButton rightBumper = new JoystickButton(xboxController, XboxController.Button.kRightBumper.value);
         rightBumper.whenHeld(intakeCommand);

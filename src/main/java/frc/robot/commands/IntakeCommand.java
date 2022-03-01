@@ -12,6 +12,7 @@ public class IntakeCommand extends CommandBase {
 
   /** Creates a new IntakeCommand. */
   public IntakeCommand(BallManipulator ballManipulator) {
+    this.ballManipulator = ballManipulator;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(ballManipulator);
   }

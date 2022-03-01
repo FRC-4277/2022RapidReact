@@ -20,6 +20,7 @@ public class BallManipulator extends SubsystemBase {
   /** Creates a new BallManipulator. */
   public BallManipulator() {
       motor.configFactoryDefault();
+      motor.setInverted(true);
   }
 
   public void intake() {

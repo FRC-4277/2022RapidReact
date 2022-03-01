@@ -8,17 +8,21 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
 import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
+import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
+import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.TalonFXInvertType;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import static frc.robot.Constants.Arm.*;
 
 public class Arm extends SubsystemBase {
-  public static final double SPEED = 0.25;
+  public static final double SPEED = 0.5;
   public static final double SLOW_ZONE_DEGREES = 10; // Slow down within 10 degrees of end
-  public static final double SLOW_SPEED = 0.10;
+  public static final double SLOW_SPEED = 0.3;
+  public static final double MOTION_MAGIC_THREHSOLD = 1750;
   private TalonFX motor = new TalonFX(MOTOR);
 
   /** Creates a new Arm. */
@@ -27,12 +31,18 @@ public class Arm extends SubsystemBase {
     motor.setInverted(TalonFXInvertType.CounterClockwise);
     motor.setNeutralMode(NeutralMode.Brake);
 
+    motor.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, 100); // PID index 0, 100ms timeout
+
     motor.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen);
     motor.configClearPositionOnLimitR(true, 100); //100 ms timeout
+
+    // Enable Soft Limit to ensure arm doesn't go too far
+    motor.configForwardSoftLimitThreshold(rotationsToSensorUnits(DESIRED_ROTATIONS));
+    motor.configForwardSoftLimitEnable(true);
   
     motor.configMotionCruiseVelocity(CRUISE_VELOCITY_NATIVE);
     motor.configMotionAcceleration(CRUISE_ACCELERATION_NATIVE);
-    motor.configMotionSCurveStrength(S_CURVE_SMOOTHING);
+    //motor.configMotionSCurveStrength(S_CURVE_SMOOTHING);
 
     motor.config_kP(0, PID_P);
     motor.config_kI(0, PID_I);
@@ -42,6 +52,7 @@ public class Arm extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
+    SmartDashboard.putNumber("Arm Degrees", getPositionDegrees());
   }
 
   public void moveDownManual() {
@@ -54,6 +65,14 @@ public class Arm extends SubsystemBase {
 
   public void moveUpManual() {
     motor.set(ControlMode.PercentOutput, SPEED);
+  }
+
+  public void moveUp(double speed) {
+    motor.set(ControlMode.PercentOutput, Math.abs(speed));
+  }
+
+  public void moveUpManualSlow() {
+    motor.set(ControlMode.PercentOutput, SLOW_SPEED);
   }
 
   public void moveManual(ArmDirection direction) {
@@ -73,9 +92,11 @@ public class Arm extends SubsystemBase {
 
   public void moveDownAutomatic() {
     if (getPositionDegrees() <= 10) {
+      System.out.println("Move down auto: slow");
       moveDownManualSlow();
     } else {
-      motor.set(ControlMode.MotionMagic, 0);
+      System.out.println("Move down auto: 0");
+      motor.set(TalonFXControlMode.MotionMagic, 0);
     }
   }
 
@@ -88,8 +109,19 @@ public class Arm extends SubsystemBase {
   }
 
   public void moveUpAutomatic() {
+    if (getPositionDegrees() <= 15) {
+      moveUpManual();
+      System.out.println("Auto is manually moving up slow as deg is " + getPositionDegrees());
+      return;
+    }
     int setpoint = rotationsToSensorUnits(DESIRED_ROTATIONS);
-    motor.set(ControlMode.MotionMagic, setpoint);
+    if (motor.getClosedLoopError(0) >= MOTION_MAGIC_THREHSOLD) {
+      motor.set(TalonFXControlMode.MotionMagic, setpoint);
+    } else {
+      stopMoving();
+    }
+    System.out.println("Move up automatic: " + setpoint);
+    System.out.println("Closed loop error: " + motor.getClosedLoopError(0));
   }
 
   public boolean isBottomedOut() {

@@ -43,8 +43,8 @@ public class DriveTrain extends SubsystemBase {
 
   }
 
-  public void joystickDrive(double forwardSpeed, double rotation) {
-    drive.arcadeDrive(forwardSpeed, rotation);
+  public void joystickDrive(double forwardSpeed, double rotation, boolean turnInPlace) {
+    drive.curvatureDrive(forwardSpeed, rotation, turnInPlace);
   }
 
   /**

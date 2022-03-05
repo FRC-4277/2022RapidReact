@@ -21,7 +21,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import static frc.robot.Constants.Arm.*;
 
 public class Arm extends SubsystemBase {
-  public static final double SPEED = 0.5;
+  public static final double SPEED = 0.2;
   public static final double SLOW_ZONE_DEGREES = 10; // Slow down within 10 degrees of end
   public static final double SLOW_SPEED = 0.3;
   public static final double MOTION_MAGIC_THREHSOLD = 1750;
@@ -60,7 +60,7 @@ public class Arm extends SubsystemBase {
   }
 
   public void moveDownManual() {
-    motor.set(ControlMode.PercentOutput, -SPEED);
+    motor.set(ControlMode.PercentOutput, -0.2);
   }
 
   public void moveDownManualSlow() {
@@ -68,7 +68,7 @@ public class Arm extends SubsystemBase {
   }
 
   public void moveUpManual() {
-    motor.set(ControlMode.PercentOutput, SPEED);
+    motor.set(ControlMode.PercentOutput, 0.2);
   }
 
   public void moveUp(double speed) {

@@ -31,7 +31,14 @@ public class JoystickDriveCommand extends CommandBase {
   @Override
   public void execute() {
     //System.out.println("test");
-    driveTrain.joystickDrive(-joystick.getY(), joystick.getZ());
+    double rotation = joystick.getZ();
+    boolean turnInPlace =joystick.getRawButton(1);
+    // Half speed rotation when turning in place
+    if (turnInPlace) {
+      rotation *= 0.5;
+    }
+    
+    driveTrain.joystickDrive(-joystick.getY(), rotation, turnInPlace);
   }
 
   // Called once the command ends or is interrupted.

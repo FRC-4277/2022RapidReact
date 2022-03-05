@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.math.util.Units;
 
 /** Add your docs here. */
 public class Constants {
@@ -19,6 +20,12 @@ public class Constants {
         public static final int FRONT_RIGHT = 2;
         public static final int BACK_LEFT = 3;
         public static final int BACK_RIGHT= 4;
+        // Autonomous Driving
+        public static final double WHEEL_DIAMETER_IN = 6;
+        public static final double WHEEL_DIAMETER_M = Units.inchesToMeters(WHEEL_DIAMETER_IN);
+        public static final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER_M * Math.PI;
+        public static final int TALON_UNITS_PER_REV = 2048;
+        public static final double GEARING = 10.71;
     }
 
     public static class Arm {

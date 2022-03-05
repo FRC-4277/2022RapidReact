@@ -25,11 +25,15 @@ public class ArmManualHoldCommand extends CommandBase {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    holdRad = arm.getPositionRad() + ((direction == ArmDirection.UP ? 1 : -1) * INCREMENT_RAD);
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
-  public void execute() {}
+  public void execute() {
+    arm.holdPosition(holdRad);
+  }
 
   // Called once the command ends or is interrupted.
   @Override

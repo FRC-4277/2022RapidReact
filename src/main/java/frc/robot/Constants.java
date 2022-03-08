@@ -37,7 +37,7 @@ public class Constants {
         //public static final int CRUISE_VELOCITY_NATIVE = CRUISE_VELOCITY_RPM * 60 * TALON_UNITS_PER_REV / 10; // converting RPM to units/100ms
         //public static final int CRUISE_ACCELERATION_NATIVE = (int) Math.round(CRUISE_VELOCITY_NATIVE / 0.5); // "0.5" secs to reach cruise velocity
         //public static final int S_CURVE_SMOOTHING = 5;
-        public static final double DESIRED_DEGREES = 70; // 68.37 in robot CAD
+        public static final double DESIRED_DEGREES = 68; // 68.37 in robot CAD
         public static final double DESIRED_ROTATIONS = DESIRED_DEGREES / 360;
         // Position PID
         public static final double UP_PID_P = 0.01;

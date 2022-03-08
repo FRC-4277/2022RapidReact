@@ -50,10 +50,11 @@ public class ArmAutoMoveCommand extends CommandBase {
     } else {
       // Hold desired position
       if (direction == ArmDirection.UP) {
+        // PID hold at position
         arm.holdPosition(Math.toRadians(DESIRED_DEGREES));
       } else {
-        // Hold down by just moving down slowly as it will hit limit switch
-        arm.moveDownManualSlow();
+        // Have it perform its logic on how to hold down
+        arm.moveDownAutomatic(null);
       }
     }
   }

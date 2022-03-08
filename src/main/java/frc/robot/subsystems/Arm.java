@@ -24,8 +24,10 @@ public class Arm extends SubsystemBase {
   public static final double SPEED = 0.2;
   public static final double SLOW_ZONE_DEGREES = 10; // Slow down within 10 degrees of end
   public static final double SLOW_SPEED = 0.3;
-  public static final double MOTION_MAGIC_THREHSOLD = 1750;
-  private TalonFX motor = new TalonFX(MOTOR);
+
+  private final TalonFX motor = new TalonFX(MOTOR);
+  private ArmDirection pidDirection = null; // Direction that PID is currently configured for
+  private boolean hasBeenZeroed = false;
 
   /** Creates a new Arm. */
   public Arm() {
@@ -42,34 +44,28 @@ public class Arm extends SubsystemBase {
     motor.configForwardSoftLimitThreshold(rotationsToSensorUnits(DESIRED_ROTATIONS));
     motor.configForwardSoftLimitEnable(true);
   
-    motor.configMotionCruiseVelocity(CRUISE_VELOCITY_NATIVE);
-    motor.configMotionAcceleration(CRUISE_ACCELERATION_NATIVE);
+    //motor.configMotionCruiseVelocity(CRUISE_VELOCITY_NATIVE);
+    //motor.configMotionAcceleration(CRUISE_ACCELERATION_NATIVE);
     //motor.configMotionSCurveStrength(S_CURVE_SMOOTHING);
-
-    motor.config_kP(0, PID_P);
-    motor.config_kI(0, PID_I);
-    motor.config_kD(0, PID_D);
   }
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
     SmartDashboard.putNumber("Arm Native", motor.getSelectedSensorPosition());
     SmartDashboard.putNumber("Arm Degrees", getPositionDegrees());
     SmartDashboard.putNumber("Arm Rad", Math.toRadians(getPositionDegrees()));
+    // Set zeroed variable to true if the limit switch is ever hit
+    if (!hasBeenZeroed && (motor.isRevLimitSwitchClosed() == 1)) {
+      hasBeenZeroed = true;
+    }
+    SmartDashboard.putBoolean("Has Been Zeroed", hasBeenZeroed);
   }
 
-  public void moveDownManual() {
-    motor.set(ControlMode.PercentOutput, -0.2);
-  }
 
   public void moveDownManualSlow() {
     motor.set(ControlMode.PercentOutput, -SLOW_SPEED);
   }
 
-  public void moveUpManual() {
-    motor.set(ControlMode.PercentOutput, 0.2);
-  }
 
   public void moveUp(double speed) {
     motor.set(ControlMode.PercentOutput, Math.abs(speed));
@@ -80,14 +76,7 @@ public class Arm extends SubsystemBase {
   }
 
   public void moveManual(ArmDirection direction) {
-    switch(direction) {
-      case DOWN:
-        moveDownManual();
-        break;
-      case UP:
-        moveUpManual();
-        break;
-    }
+    motor.set(ControlMode.PercentOutput, (direction == ArmDirection.UP ? 1 : -1) * SPEED);
   }
 
   public void stopMoving() {
@@ -96,13 +85,20 @@ public class Arm extends SubsystemBase {
 
   public void moveDownAutomatic(TrapezoidProfile.State state) {
     if (getPositionDegrees() <= 10) {
-      System.out.println("Move down auto: slow");
-      moveDownManualSlow();
+      // Position PID to hold zero
+      if (hasBeenZeroed && state != null) {
+        configurePID(ArmDirection.DOWN);
+        holdPosition(0);
+      } else {
+        moveDownManualSlow();
+      }
     } else {
-      double positionSensorUnits = radToSensorUnits(state.position);
-      System.out.println("Move down auto: " + positionSensorUnits);
-      System.out.println("Current pos: " + motor.getSelectedSensorPosition());
-      motor.set(TalonFXControlMode.Position, positionSensorUnits, DemandType.ArbitraryFeedForward, FEEDFORWARD.calculate(state.position, state.velocity) / 12.0);
+      if (hasBeenZeroed && state != null) {
+        configurePID(ArmDirection.DOWN);
+        holdPosition(state.position);
+      } else {
+        moveManual(ArmDirection.DOWN);
+      }
     }
   }
 
@@ -119,14 +115,24 @@ public class Arm extends SubsystemBase {
   }
 
   public void moveUpAutomatic(TrapezoidProfile.State state) {
-    double positionSensorUnits = radToSensorUnits(state.position);
-    motor.set(TalonFXControlMode.Position, positionSensorUnits, DemandType.ArbitraryFeedForward, FEEDFORWARD.calculate(state.position, state.velocity) / 12.0);
-    System.out.println("Move up auto: " + positionSensorUnits);
-    System.out.println("Current pos: " + motor.getSelectedSensorPosition());
+    configurePID(ArmDirection.UP);
+    holdPosition(state.position);
+  }
+
+  public void configurePID(ArmDirection direction) {
+    if (pidDirection != direction) {
+      motor.config_kP(0, direction == ArmDirection.UP ? UP_PID_P : DOWN_PID_P);
+      motor.config_kI(0, direction == ArmDirection.UP ? UP_PID_I : DOWN_PID_I);
+      motor.config_kD(0, direction == ArmDirection.UP ? UP_PID_D : DOWN_PID_D);
+      pidDirection = direction;
+    }
   }
 
   public void holdPosition(double positionRad) {
-    motor.set(TalonFXControlMode.Position, radToSensorUnits(positionRad), DemandType.ArbitraryFeedForward, FEEDFORWARD.calculate(positionRad, 0) / 12.0);
+    double targetUnits = radToSensorUnits(positionRad);
+    motor.set(TalonFXControlMode.Position, targetUnits, DemandType.ArbitraryFeedForward, FEEDFORWARD.calculate(positionRad, 0) / 12.0);
+    SmartDashboard.putNumber("Target Pos (Native)", targetUnits);
+    SmartDashboard.putNumber("PID Error (Native)", motor.getClosedLoopError());
   }
 
   public boolean isBottomedOut() {
@@ -161,7 +167,7 @@ public class Arm extends SubsystemBase {
     return rotationsToSensorUnits(rotationsPerSecond);
   }
 
-  public static enum ArmDirection {
+  public enum ArmDirection {
     UP, DOWN;
   }
 }

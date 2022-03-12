@@ -39,6 +39,7 @@ public class ArmAutoMoveCommand extends CommandBase {
     timer = new Timer();
     timer.reset();
     timer.start();
+    System.out.println("START");
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -46,12 +47,17 @@ public class ArmAutoMoveCommand extends CommandBase {
   public void execute() {
     if (timer.get() <= trapezoidProfile.totalTime()) {
       // Use trapezoid profile
-      arm.moveAutomatic(direction, trapezoidProfile.calculate(timer.get()));
+      TrapezoidProfile.State state = trapezoidProfile.calculate(timer.get());
+      state.position = Math.toRadians(DESIRED_DEGREES) - state.position;
+      arm.moveAutomatic(direction, state);
+      System.out.println("ARM POSITION TARGET: " + state.position + " AT t=" + timer.get());
     } else {
+      System.out.println("HOLDING");
       // Hold desired position
       if (direction == ArmDirection.UP) {
         // PID hold at position
-        arm.holdPosition(Math.toRadians(DESIRED_DEGREES));
+        arm.configurePID(ArmDirection.UP);
+        arm.holdPosition(Math.toRadians(DESIRED_DEGREES), false);
       } else {
         // Have it perform its logic on how to hold down
         arm.moveDownAutomatic(null);

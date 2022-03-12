@@ -31,23 +31,23 @@ public class Constants {
     public static class Arm {
         public static final int MOTOR = 5;
         public static final int TALON_UNITS_PER_REV = 2048;
-        public static final int GEARING = 16 * 5; // 16 from VersaPlanetary gearbox, 5 from sprockets
+        public static final int GEARING = 3 * 16 * 5; // 48 from VersaPlanetary gearbox, 5 from sprockets
         // Motion Magic
         //public static final int CRUISE_VELOCITY_RPM = 6380 / 8; // eighth free speed
         //public static final int CRUISE_VELOCITY_NATIVE = CRUISE_VELOCITY_RPM * 60 * TALON_UNITS_PER_REV / 10; // converting RPM to units/100ms
         //public static final int CRUISE_ACCELERATION_NATIVE = (int) Math.round(CRUISE_VELOCITY_NATIVE / 0.5); // "0.5" secs to reach cruise velocity
         //public static final int S_CURVE_SMOOTHING = 5;
-        public static final double DESIRED_DEGREES = 68; // 68.37 in robot CAD
+        public static final double DESIRED_DEGREES = 81; // 68.37 in robot CAD
         public static final double DESIRED_ROTATIONS = DESIRED_DEGREES / 360;
         // Position PID
-        public static final double UP_PID_P = 0.01;
+        public static final double UP_PID_P = 0.04;
         public static final double UP_PID_I = 0;
         public static final double UP_PID_D = 0;
-        public static final double DOWN_PID_P = 0.01;
+        public static final double DOWN_PID_P = 0.04;
         public static final double DOWN_PID_I = 0;
         public static final double DOWN_PID_D = 0;
         // PID Feedforward
-        public static final TrapezoidProfile.Constraints TRAPEZOID_CONSTRAINTS = new TrapezoidProfile.Constraints(0.25, 0.5); // rad/s and rad/s^2
+        public static final TrapezoidProfile.Constraints TRAPEZOID_CONSTRAINTS = new TrapezoidProfile.Constraints(2.0, 2.0); // rad/s and rad/s^2
         public static final ArmFeedforward FEEDFORWARD = new ArmFeedforward(0, 0, 0); // Feedforward TODO
 
     }

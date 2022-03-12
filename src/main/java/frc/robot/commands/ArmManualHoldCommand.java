@@ -9,7 +9,7 @@ import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Arm.ArmDirection;
 
 public class ArmManualHoldCommand extends CommandBase {
-  private static final double INCREMENT_RAD = Math.toRadians(10);
+  private static final double INCREMENT_RAD = Math.toRadians(20);
   private Arm arm;
   private ArmDirection direction;
   private Double holdRad;
@@ -32,7 +32,9 @@ public class ArmManualHoldCommand extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    arm.holdPosition(holdRad);
+    arm.configurePID(direction);
+    arm.holdPosition(holdRad, false);
+    System.out.println("Arm Manual Hold: " + arm.motor.getMotorOutputVoltage());
   }
 
   // Called once the command ends or is interrupted.

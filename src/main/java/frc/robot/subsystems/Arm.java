@@ -23,9 +23,9 @@ import static frc.robot.Constants.Arm.*;
 public class Arm extends SubsystemBase {
   public static final double SPEED = 0.2;
   public static final double SLOW_ZONE_DEGREES = 10; // Slow down within 10 degrees of end
-  public static final double SLOW_SPEED = 0.3;
+  public static final double SLOW_SPEED = 0.2;
 
-  private final TalonFX motor = new TalonFX(MOTOR);
+  public final TalonFX motor = new TalonFX(MOTOR);
   private ArmDirection pidDirection = null; // Direction that PID is currently configured for
   private boolean hasBeenZeroed = false;
 
@@ -88,14 +88,14 @@ public class Arm extends SubsystemBase {
       // Position PID to hold zero
       if (hasBeenZeroed && state != null) {
         configurePID(ArmDirection.DOWN);
-        holdPosition(0);
+        holdPosition(0, false);
       } else {
         moveDownManualSlow();
       }
     } else {
       if (hasBeenZeroed && state != null) {
         configurePID(ArmDirection.DOWN);
-        holdPosition(state.position);
+        holdPosition(state.position, false);
       } else {
         moveManual(ArmDirection.DOWN);
       }
@@ -116,10 +116,11 @@ public class Arm extends SubsystemBase {
 
   public void moveUpAutomatic(TrapezoidProfile.State state) {
     configurePID(ArmDirection.UP);
-    holdPosition(state.position);
+    holdPosition(state.position, false);
   }
 
   public void configurePID(ArmDirection direction) {
+    SmartDashboard.putString("Arm PID Dir", direction.toString());
     if (pidDirection != direction) {
       motor.config_kP(0, direction == ArmDirection.UP ? UP_PID_P : DOWN_PID_P);
       motor.config_kI(0, direction == ArmDirection.UP ? UP_PID_I : DOWN_PID_I);
@@ -128,7 +129,14 @@ public class Arm extends SubsystemBase {
     }
   }
 
-  public void holdPosition(double positionRad) {
+  public void holdPosition(double positionRad, boolean setPID) {
+    if (setPID) {
+      if (getPositionRad() < positionRad) {
+        configurePID(ArmDirection.UP);
+      } else {
+        configurePID(ArmDirection.DOWN);
+      }
+    }
     double targetUnits = radToSensorUnits(positionRad);
     motor.set(TalonFXControlMode.Position, targetUnits, DemandType.ArbitraryFeedForward, FEEDFORWARD.calculate(positionRad, 0) / 12.0);
     SmartDashboard.putNumber("Target Pos (Native)", targetUnits);

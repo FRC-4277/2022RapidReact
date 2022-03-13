@@ -47,7 +47,7 @@ public class Constants {
         public static final double DOWN_PID_I = 0;
         public static final double DOWN_PID_D = 0;
         // PID Feedforward
-        public static final TrapezoidProfile.Constraints TRAPEZOID_CONSTRAINTS = new TrapezoidProfile.Constraints(2.0, 2.0); // rad/s and rad/s^2
+        public static final TrapezoidProfile.Constraints TRAPEZOID_CONSTRAINTS = new TrapezoidProfile.Constraints(5.5, 5); // rad/s and rad/s^2
         public static final ArmFeedforward FEEDFORWARD = new ArmFeedforward(0, 0, 0); // Feedforward TODO
 
     }

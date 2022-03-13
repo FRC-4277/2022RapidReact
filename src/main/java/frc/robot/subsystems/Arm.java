@@ -25,9 +25,9 @@ public class Arm extends SubsystemBase {
   public static final double SLOW_ZONE_DEGREES = 10; // Slow down within 10 degrees of end
   public static final double SLOW_SPEED = 0.2;
 
-  public final TalonFX motor = new TalonFX(MOTOR);
+  private final TalonFX motor = new TalonFX(MOTOR);
   private ArmDirection pidDirection = null; // Direction that PID is currently configured for
-  private boolean hasBeenZeroed = false;
+  private boolean hasBeenZeroed = false; // Whether the limit switch has been hit yet
 
   /** Creates a new Arm. */
   public Arm() {
@@ -43,10 +43,6 @@ public class Arm extends SubsystemBase {
     // Enable Soft Limit to ensure arm doesn't go too far
     motor.configForwardSoftLimitThreshold(rotationsToSensorUnits(DESIRED_ROTATIONS));
     motor.configForwardSoftLimitEnable(true);
-  
-    //motor.configMotionCruiseVelocity(CRUISE_VELOCITY_NATIVE);
-    //motor.configMotionAcceleration(CRUISE_ACCELERATION_NATIVE);
-    //motor.configMotionSCurveStrength(S_CURVE_SMOOTHING);
   }
 
   @Override

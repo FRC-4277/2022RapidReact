@@ -6,35 +6,46 @@ package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.Arm.ArmDirection;
 
-public class ArmFirstDownCommand extends CommandBase {
+public class ArmManualHoldCommand extends CommandBase {
+  private static final double INCREMENT_RAD = Math.toRadians(20);
   private Arm arm;
+  private ArmDirection direction;
+  private Double holdRad;
 
-  /** Creates a new ArmFirstDownCommand. */
-  public ArmFirstDownCommand(Arm arm) {
+
+  /** Creates a new ArmManualHoldCommand. */
+  public ArmManualHoldCommand(Arm arm, ArmDirection direction) {
     this.arm = arm;
+    this.direction = direction;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(arm);
   }
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    holdRad = arm.getPositionRad() + ((direction == ArmDirection.UP ? 1 : -1) * INCREMENT_RAD);
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    arm.moveManual(Arm.ArmDirection.DOWN);
+    arm.configurePID(direction);
+    arm.holdPosition(holdRad, false);
+    System.out.println("Arm Manual Hold: " + arm.motor.getMotorOutputVoltage());
   }
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    arm.stopMoving();
+  }
 
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    // No need to stop, it will stop itself with limit switch
     return false;
   }
 }

@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.ArmAutoMoveCommand;
+import frc.robot.commands.ArmManualHoldCommand;
 import frc.robot.commands.ArmManualMoveCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.JoystickDriveCommand;
@@ -24,22 +25,27 @@ import static frc.robot.Constants.Joysticks.*;
 
 /** Add your docs here. */
 public class RobotContainer {
-    private DriveTrain driveTrain = new DriveTrain();
-    private Arm arm = new Arm();
-    private BallManipulator ballManipulator = new BallManipulator();
-    
-    private Joystick joystick = new Joystick(LOGITECH_JOYSTICK);
-    private XboxController xboxController = new XboxController(XBOX_CONTROLLER);
+    // Subsystems
+    private final DriveTrain driveTrain = new DriveTrain();
+    private final Arm arm = new Arm();
+    private final BallManipulator ballManipulator = new BallManipulator();
 
-    private JoystickDriveCommand joystickDriveCommand = new JoystickDriveCommand(driveTrain, joystick);
-    
-    private ArmAutoMoveCommand armAutoUpCommand = new ArmAutoMoveCommand(arm, ArmDirection.UP);
-    private ArmAutoMoveCommand armAutoDownCommand = new ArmAutoMoveCommand(arm, ArmDirection.DOWN);
-    private ArmManualMoveCommand armManualUpCommand = new ArmManualMoveCommand(arm, ArmDirection.UP);
-    private ArmManualMoveCommand armManualDownCommand = new ArmManualMoveCommand(arm, ArmDirection.DOWN);
+    // Controllers
+    private final Joystick joystick = new Joystick(LOGITECH_JOYSTICK);
+    private final XboxController xboxController = new XboxController(XBOX_CONTROLLER);
 
-    private IntakeCommand intakeCommand = new IntakeCommand(ballManipulator);
-    private ShootCommand shootCommand = new ShootCommand(ballManipulator);
+    // Commands
+    private final JoystickDriveCommand joystickDriveCommand = new JoystickDriveCommand(driveTrain, joystick);
+    
+    private final ArmAutoMoveCommand armAutoUpCommand = new ArmAutoMoveCommand(arm, ArmDirection.UP);
+    private final ArmAutoMoveCommand armAutoDownCommand = new ArmAutoMoveCommand(arm, ArmDirection.DOWN);
+    private final ArmManualMoveCommand armManualUpCommand = new ArmManualMoveCommand(arm, ArmDirection.UP);
+    private final ArmManualMoveCommand armManualDownCommand = new ArmManualMoveCommand(arm, ArmDirection.DOWN);
+    private final ArmManualHoldCommand armManualHoldUpCommand = new ArmManualHoldCommand(arm, ArmDirection.UP);
+    private final ArmManualHoldCommand armManualHoldDownCommand = new ArmManualHoldCommand(arm, ArmDirection.DOWN);
+
+    private final IntakeCommand intakeCommand = new IntakeCommand(ballManipulator);
+    private final ShootCommand shootCommand = new ShootCommand(ballManipulator);
 
     public RobotContainer() {
         configureButtonBindings();
@@ -62,6 +68,10 @@ public class RobotContainer {
         upPOV.whenHeld(armManualUpCommand);
         POVButton downPOV = new POVButton(xboxController, 180);
         downPOV.whenHeld(armManualDownCommand);
+        POVButton leftPOV = new POVButton(xboxController, 270);
+        leftPOV.whenPressed(armManualHoldDownCommand);
+        POVButton rightPOV = new POVButton(xboxController, 90);
+        rightPOV.whenPressed(armManualHoldUpCommand);
 
         JoystickButton rightBumper = new JoystickButton(xboxController, XboxController.Button.kRightBumper.value);
         rightBumper.whenHeld(intakeCommand);

@@ -10,10 +10,10 @@ import frc.robot.subsystems.Arm.ArmDirection;
 
 public class ArmManualHoldCommand extends CommandBase {
   private static final double INCREMENT_RAD = Math.toRadians(10);
+
   private final Arm arm;
   private final ArmDirection direction;
-  private Double holdRad;
-
+  private double targetPositionRad;
 
   /** Creates a new ArmManualHoldCommand. */
   public ArmManualHoldCommand(Arm arm, ArmDirection direction) {
@@ -26,14 +26,13 @@ public class ArmManualHoldCommand extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    holdRad = arm.getPositionRad() + ((direction == ArmDirection.UP ? 1 : -1) * INCREMENT_RAD);
+    targetPositionRad = arm.getPositionRad() + ((direction == ArmDirection.UP ? 1 : -1) * INCREMENT_RAD);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    arm.configurePID(direction);
-    arm.holdPosition(holdRad, false);
+    arm.holdPositionRad(targetPositionRad);
   }
 
   // Called once the command ends or is interrupted.

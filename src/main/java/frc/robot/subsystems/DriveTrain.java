@@ -14,18 +14,18 @@ import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class DriveTrain extends SubsystemBase {
-  private WPI_TalonFX frontLeftMotor = new WPI_TalonFX(FRONT_LEFT);
-  private WPI_TalonFX frontRightMotor = new WPI_TalonFX(FRONT_RIGHT);
-  private WPI_TalonFX backLeftMotor = new WPI_TalonFX(BACK_LEFT);
-  private WPI_TalonFX backRightMotor = new WPI_TalonFX(BACK_RIGHT);
+  private final WPI_TalonFX frontLeftMotor = new WPI_TalonFX(FRONT_LEFT);
+  private final WPI_TalonFX frontRightMotor = new WPI_TalonFX(FRONT_RIGHT);
+  private final WPI_TalonFX backLeftMotor = new WPI_TalonFX(BACK_LEFT);
+  private final WPI_TalonFX backRightMotor = new WPI_TalonFX(BACK_RIGHT);
 
-  private AHRS ahrs = new AHRS();
+  private final AHRS ahrs = new AHRS();
   private double yawOffset = 0;
 
-  private MotorControllerGroup leftGroup = new MotorControllerGroup(frontLeftMotor, backLeftMotor);
-  private MotorControllerGroup rightGroup = new MotorControllerGroup(frontRightMotor, backRightMotor);
+  private final MotorControllerGroup leftGroup = new MotorControllerGroup(frontLeftMotor, backLeftMotor);
+  private final MotorControllerGroup rightGroup = new MotorControllerGroup(frontRightMotor, backRightMotor);
 
-  private DifferentialDrive drive = new DifferentialDrive(leftGroup, rightGroup);
+  private final DifferentialDrive drive = new DifferentialDrive(leftGroup, rightGroup);
 
   /** Creates a new DriveTrain. */
   public DriveTrain() {

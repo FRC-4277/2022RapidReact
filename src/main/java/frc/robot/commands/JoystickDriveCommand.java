@@ -9,8 +9,8 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.DriveTrain;
 
 public class JoystickDriveCommand extends CommandBase {
-  private DriveTrain driveTrain;
-  private Joystick joystick;
+  private final DriveTrain driveTrain;
+  private final Joystick joystick;
 
   /** Creates a new JoystickDriveCommand. */
   public JoystickDriveCommand(DriveTrain driveTrain, Joystick joystick) {
@@ -23,16 +23,13 @@ public class JoystickDriveCommand extends CommandBase {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {
-    System.out.println("initialized");
-  }
+  public void initialize() {}
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    //System.out.println("test");
     double rotation = joystick.getZ();
-    boolean turnInPlace =joystick.getRawButton(1);
+    boolean turnInPlace = joystick.getRawButton(1);
     // Half speed rotation when turning in place
     if (turnInPlace) {
       rotation *= 0.5;

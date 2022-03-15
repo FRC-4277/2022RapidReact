@@ -9,13 +9,14 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.commands.ArmAutoMoveCommand;
+import frc.robot.commands.ArmMoveToCommand;
 import frc.robot.commands.ArmManualHoldCommand;
 import frc.robot.commands.ArmManualMoveCommand;
 import frc.robot.commands.IntakeCommand;
 import frc.robot.commands.JoystickDriveCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.Arm.ArmPosition;
 import frc.robot.subsystems.BallManipulator;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.Arm.ArmDirection;
@@ -35,30 +36,37 @@ public class RobotContainer {
     private final XboxController xboxController = new XboxController(XBOX_CONTROLLER);
 
     // Commands
+    /* Drive commands */
     private final JoystickDriveCommand joystickDriveCommand = new JoystickDriveCommand(driveTrain, joystick);
-    
-    private final ArmAutoMoveCommand armAutoUpCommand = new ArmAutoMoveCommand(arm, ArmDirection.UP);
-    private final ArmAutoMoveCommand armAutoDownCommand = new ArmAutoMoveCommand(arm, ArmDirection.DOWN);
+    /* Automatic motion profile arm commands */
+    private final ArmMoveToCommand armAutoUpCommand = new ArmMoveToCommand(arm, ArmPosition.UP);
+    private final ArmMoveToCommand armAutoDownCommand = new ArmMoveToCommand(arm, ArmPosition.DOWN);
+    /* Arm manual commands, using percent output, in case encoder fails */
     private final ArmManualMoveCommand armManualUpCommand = new ArmManualMoveCommand(arm, ArmDirection.UP);
     private final ArmManualMoveCommand armManualDownCommand = new ArmManualMoveCommand(arm, ArmDirection.DOWN);
+    /* Arm manual commands, using PID, that change setpoint */
     private final ArmManualHoldCommand armManualHoldUpCommand = new ArmManualHoldCommand(arm, ArmDirection.UP);
     private final ArmManualHoldCommand armManualHoldDownCommand = new ArmManualHoldCommand(arm, ArmDirection.DOWN);
-
+    /* Ball commands */
     private final IntakeCommand intakeCommand = new IntakeCommand(ballManipulator);
     private final ShootCommand shootCommand = new ShootCommand(ballManipulator);
 
     public RobotContainer() {
+        // Configure controller bindings
         configureButtonBindings();
-
-        
-        System.out.println("Default Command Set");
+        // Set default commands
         driveTrain.setDefaultCommand(joystickDriveCommand);
-        System.out.println("Done!!!");
     }
 
     public void configureButtonBindings() {
-        // When Pressed/Active = schedules on press, does not schedule until pressed again
-        // When Held/Active Once = Schedules on press, cancels on depress
+        /* REFERENCE:
+         When Pressed/Active = schedules on press, does not schedule until pressed again
+         When Held/Active Once = Schedules on press, cancels on depress
+        */
+
+        /* LOGITECH CONTROLLER BINDINGS */
+
+        /* XBOX CONTROLLER BINDINGS */
         JoystickButton leftBumper = new JoystickButton(xboxController, XboxController.Button.kLeftBumper.value);
         leftBumper.whenPressed(armAutoUpCommand);
         Trigger leftTrigger = new XboxTrigger(xboxController, true);

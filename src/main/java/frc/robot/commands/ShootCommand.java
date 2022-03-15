@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.BallManipulator;
 
 public class ShootCommand extends CommandBase {
-  private BallManipulator ballManipulator;
+  private final BallManipulator ballManipulator;
 
   /** Creates a new ShootCommand. */
   public ShootCommand(BallManipulator ballManipulator) {

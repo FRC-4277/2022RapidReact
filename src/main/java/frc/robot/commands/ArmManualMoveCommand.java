@@ -9,8 +9,8 @@ import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Arm.ArmDirection;
 
 public class ArmManualMoveCommand extends CommandBase {
-  private Arm arm;
-  private ArmDirection direction;
+  private final Arm arm;
+  private final ArmDirection direction;
 
   /** Creates a new ArmManualMoveCommand. */
   public ArmManualMoveCommand(Arm arm, ArmDirection direction) {

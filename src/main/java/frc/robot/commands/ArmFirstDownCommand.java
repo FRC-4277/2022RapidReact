@@ -4,11 +4,19 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.Arm;
+import static frc.robot.Constants.Arm.*;
 
+/**
+ * The command that will run in autonomous to move the arm down for the first time
+ */
 public class ArmFirstDownCommand extends CommandBase {
-  private Arm arm;
+  private final Arm arm;
+  private TrapezoidProfile trapezoidProfile;
+  private Timer timer;
 
   /** Creates a new ArmFirstDownCommand. */
   public ArmFirstDownCommand(Arm arm) {
@@ -19,17 +27,36 @@ public class ArmFirstDownCommand extends CommandBase {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+    // Create motion profile from current position to down position (0)
+    TrapezoidProfile.State start = arm.getTrapezoidState();
+    // Have the end position be a few degrees above 0 just in case the arm isn't in perfect start position
+    TrapezoidProfile.State end = new TrapezoidProfile.State(arm.degreesToSensorUnits(Arm.SLOW_ZONE_DEGREES / 2), 0);
+    trapezoidProfile = new TrapezoidProfile(TRAPEZOID_CONSTRAINTS, end, start);
+
+    timer = new Timer();
+    timer.reset();
+    timer.start();
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    arm.moveManual(Arm.ArmDirection.DOWN);
+    if (timer.get() <= trapezoidProfile.totalTime()) {
+      // Use trapezoid profile
+      TrapezoidProfile.State state = trapezoidProfile.calculate(timer.get());
+      arm.moveToState(state);
+    } else {
+      // Trapezoid profile done, now just hold at bottom
+      arm.holdPosition(Arm.ArmPosition.DOWN);
+    }
   }
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+    arm.stopMoving();
+  }
 
   // Returns true when the command should end.
   @Override

@@ -18,7 +18,7 @@ import frc.robot.commands.ArmMoveToCommand;
 import frc.robot.commands.ArmManualHoldCommand;
 import frc.robot.commands.ArmManualMoveCommand;
 import frc.robot.commands.IntakeCommand;
-import frc.robot.commands.JoystickDriveCommand;
+import frc.robot.commands.DriveJoystickCommand;
 import frc.robot.commands.ShootCommand;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Arm.ArmPosition;
@@ -47,7 +47,7 @@ public class RobotContainer {
 
     // Commands
     /* Drive commands */
-    private final JoystickDriveCommand joystickDriveCommand = new JoystickDriveCommand(driveTrain, joystick);
+    private final DriveJoystickCommand driveJoystickCommand = new DriveJoystickCommand(driveTrain, joystick);
     /* Automatic motion profile arm commands */
     private final ArmMoveToCommand armAutoUpCommand = new ArmMoveToCommand(arm, ArmPosition.UP);
     private final ArmMoveToCommand armAutoDownCommand = new ArmMoveToCommand(arm, ArmPosition.DOWN);
@@ -65,7 +65,7 @@ public class RobotContainer {
         // Configure controller bindings
         configureButtonBindings();
         // Set default commands
-        driveTrain.setDefaultCommand(joystickDriveCommand);
+        driveTrain.setDefaultCommand(driveJoystickCommand);
         // Shuffleboard
         setupAutonomousTab();
     }

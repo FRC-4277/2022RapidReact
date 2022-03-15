@@ -5,6 +5,8 @@
 package frc.robot;
 
 import edu.wpi.first.math.controller.ArmFeedforward;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
 import frc.robot.subsystems.Climber;
@@ -34,6 +36,9 @@ public class Constants {
         public static final double WHEEL_DIAMETER_IN = 6;
         public static final double WHEEL_DIAMETER_M = Units.inchesToMeters(WHEEL_DIAMETER_IN);
         public static final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER_M * Math.PI;
+        public static final double TRACK_WIDTH_M = Units.inchesToMeters(21.869); // From CAD
+        public static final SimpleMotorFeedforward MOTOR_FEEDFORWARD = new SimpleMotorFeedforward(0, 0, 0); // From Sysid
+        public static final DifferentialDriveKinematics DRIVE_KINEMATICS = new DifferentialDriveKinematics(TRACK_WIDTH_M);
     }
 
     public static class Arm {

@@ -9,15 +9,20 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import static frc.robot.Constants.DriveTrain.*;
 
 import com.kauailabs.navx.frc.AHRS;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+import java.util.List;
 
 public class DriveTrain extends SubsystemBase {
   private final WPI_TalonFX frontLeftMotor = new WPI_TalonFX(FRONT_LEFT);
   private final WPI_TalonFX frontRightMotor = new WPI_TalonFX(FRONT_RIGHT);
   private final WPI_TalonFX backLeftMotor = new WPI_TalonFX(BACK_LEFT);
   private final WPI_TalonFX backRightMotor = new WPI_TalonFX(BACK_RIGHT);
+  private final List<WPI_TalonFX> motors = List.of(frontLeftMotor, frontRightMotor, backLeftMotor, backRightMotor);
 
   private final AHRS ahrs = new AHRS();
   private double yawOffset = 0;
@@ -26,25 +31,31 @@ public class DriveTrain extends SubsystemBase {
   private final MotorControllerGroup rightGroup = new MotorControllerGroup(frontRightMotor, backRightMotor);
 
   private final DifferentialDrive drive = new DifferentialDrive(leftGroup, rightGroup);
+  private final DifferentialDriveOdometry odometry;
 
   /** Creates a new DriveTrain. */
   public DriveTrain() {
     drive.setSafetyEnabled(false);
     //this code resets the motors everytime it runs.
-    frontLeftMotor.configFactoryDefault();
-    frontRightMotor.configFactoryDefault();
-    backLeftMotor.configFactoryDefault();
-    backRightMotor.configFactoryDefault();
+    motors.forEach(WPI_TalonFX::configFactoryDefault);
 
     frontLeftMotor.setInverted(TalonFXInvertType.CounterClockwise);
     frontRightMotor.setInverted(TalonFXInvertType.Clockwise);
     backLeftMotor.setInverted(TalonFXInvertType.CounterClockwise);
     backRightMotor.setInverted(TalonFXInvertType.Clockwise);
 
+    // Auto driving
+    resetEncoders();
+    zeroHeading(0);
+    odometry = new DifferentialDriveOdometry(new Rotation2d(getHeading()));
   }
 
   public void joystickDrive(double forwardSpeed, double rotation, boolean turnInPlace) {
     drive.curvatureDrive(forwardSpeed, rotation, turnInPlace);
+  }
+
+  public void resetEncoders() {
+    motors.forEach(motor -> motor.setSelectedSensorPosition(0));
   }
 
   /**

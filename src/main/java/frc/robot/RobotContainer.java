@@ -4,8 +4,13 @@
 
 package frc.robot;
 
+import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -26,6 +31,11 @@ import static frc.robot.Constants.Joysticks.*;
 
 /** Add your docs here. */
 public class RobotContainer {
+    // Shuffleboard Tabs
+    private final ShuffleboardTab autoTab = Shuffleboard.getTab("Autonomous");
+    private SendableChooser<Command> autoChooser;
+    private static final String MAIN_TAB_NAME = "Main";
+    private final ShuffleboardTab mainTab = Shuffleboard.getTab(MAIN_TAB_NAME);
     // Subsystems
     private final DriveTrain driveTrain = new DriveTrain();
     private final Arm arm = new Arm();
@@ -56,9 +66,11 @@ public class RobotContainer {
         configureButtonBindings();
         // Set default commands
         driveTrain.setDefaultCommand(joystickDriveCommand);
+        // Shuffleboard
+        setupAutonomousTab();
     }
 
-    public void configureButtonBindings() {
+    private void configureButtonBindings() {
         /* REFERENCE:
          When Pressed/Active = schedules on press, does not schedule until pressed again
          When Held/Active Once = Schedules on press, cancels on depress
@@ -85,5 +97,23 @@ public class RobotContainer {
         rightBumper.whenHeld(intakeCommand);
         Trigger rightTrigger = new XboxTrigger(xboxController, false);
         rightTrigger.whileActiveOnce(shootCommand);
+    }
+
+    private void setupAutonomousTab() {
+        autoChooser = new SendableChooser<>();
+        SendableRegistry.setName(autoChooser, "Autonomous Command");
+        // Setup autonomous command options
+        autoChooser.setDefaultOption("Nothing", null);
+
+        autoTab.add(autoChooser).withPosition(0, 0).withSize(2, 1);
+    }
+
+    public Command getAutonomousCommand() {
+        return (autoChooser != null ? autoChooser.getSelected() : null);
+    }
+
+    public void teleopInit() {
+        // Switch to main Shuffleboard tab at start of teleop
+        Shuffleboard.selectTab(MAIN_TAB_NAME);
     }
 }

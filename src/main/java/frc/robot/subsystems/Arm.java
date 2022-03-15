@@ -7,8 +7,16 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.*;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.networktables.EntryListenerFlags;
+import edu.wpi.first.networktables.EntryNotification;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+import java.util.function.Consumer;
 
 import static frc.robot.Constants.Arm.*;
 
@@ -20,6 +28,10 @@ public class Arm extends SubsystemBase {
   public static final double LIMIT_SWITCH_ZONE_DEGREES = 15; // Degrees of zone to allow limit switch to zero
 
   private final TalonFX motor = new TalonFX(MOTOR);
+
+  // Shuffleboard
+  private final ShuffleboardTab tab = Shuffleboard.getTab("Arm");
+  private NetworkTableEntry armPositionEntry, hasBeenZeroedEntry, limitSwitchSafetySetting;
 
   // State Variables
   private ArmDirection pidDirection = null; // Direction that PID is currently configured for
@@ -39,35 +51,68 @@ public class Arm extends SubsystemBase {
 
     // Configure reverse (down) limit switch & have it reset encoder
     motor.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen);
-    motor.configClearPositionOnLimitR(true, 100); //100 ms timeout
+    setLimitSwitchEnabled(true);
     isLimitSwitchResetEnabled = true;
 
     // Enable Soft Limit to ensure arm doesn't go too far
     motor.configForwardSoftLimitThreshold(rotationsToSensorUnits(DESIRED_ROTATIONS));
     motor.configForwardSoftLimitEnable(true);
+
+    setupShuffleboard();
+  }
+
+  private void setupShuffleboard() {
+    armPositionEntry = tab.add("Position", "")
+            .withPosition(0, 0)
+            .withSize(3, 1)
+            .getEntry();
+    hasBeenZeroedEntry = tab.add("Has Been Zeroed", false)
+            .withWidget(BuiltInWidgets.kBooleanBox)
+            .withPosition(3, 0)
+            .withSize(1, 1)
+            .getEntry();
+    limitSwitchSafetySetting = tab.add("Enable Limit Switch Safe Zone", true)
+            .withWidget(BuiltInWidgets.kToggleSwitch)
+            .withPosition(0, 1)
+            .withSize(2, 1)
+            .getEntry();
+    // Default to enabling limit switch in case setting changes; periodic will override with correct value
+    limitSwitchSafetySetting.addListener(notification -> setLimitSwitchEnabled(true),
+            EntryListenerFlags.kUpdate | EntryListenerFlags.kLocal);
   }
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Arm Native", motor.getSelectedSensorPosition());
-    SmartDashboard.putNumber("Arm Degrees", getPositionDegrees());
-    SmartDashboard.putNumber("Arm Rad", Math.toRadians(getPositionDegrees()));
     // Set zeroed variable to true if the limit switch is ever hit
     if (!hasBeenZeroed && (motor.isRevLimitSwitchClosed() == 1)) {
       hasBeenZeroed = true;
     }
-    SmartDashboard.putBoolean("Has Been Zeroed", hasBeenZeroed);
 
     // Special logic to make the limit switch not zero the arm UNLESS arm is near the bottom
     // Only perform this logic if the bot has already zeroed its arm at least once
     if (hasBeenZeroed) {
-      boolean desiredLimitSwitchState = getPositionDegrees() <= LIMIT_SWITCH_ZONE_DEGREES;
+      /* Have limit switch state be true if either are true:
+      - Limit switch safety setting is FALSE
+      - Limit switch safety setting is TRUE, and we're in the switch zone
+       */
+
+      boolean safetyEnabled = limitSwitchSafetySetting.getBoolean(true);
+      boolean desiredLimitSwitchState = !safetyEnabled || getPositionDegrees() <= LIMIT_SWITCH_ZONE_DEGREES;
       // Update TalonFX limit switch setting only if it's changed
       if (isLimitSwitchResetEnabled != desiredLimitSwitchState) {
-        motor.configClearPositionOnLimitR(desiredLimitSwitchState, 100); //100 ms timeout
+        setLimitSwitchEnabled(desiredLimitSwitchState);
         isLimitSwitchResetEnabled = desiredLimitSwitchState;
       }
     }
+
+    // Shuffleboard
+    armPositionEntry.setString(String.format("%d u / %.2f deg / %.2f rad",
+            (int) motor.getSelectedSensorPosition(), getPositionDegrees(), Math.toRadians(getPositionDegrees())));
+    hasBeenZeroedEntry.setBoolean(hasBeenZeroed);
+  }
+
+  private void setLimitSwitchEnabled(boolean enabled) {
+    motor.configClearPositionOnLimitR(enabled, 100); //100 ms timeout
   }
 
   public void moveManualSlow(ArmDirection direction) {

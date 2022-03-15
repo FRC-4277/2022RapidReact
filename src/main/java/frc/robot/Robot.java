@@ -59,12 +59,12 @@ public class Robot extends TimedRobot {
   @Override
   public void autonomousInit() {
     //m_robotContainer.autonomousInit();
-    /*m_autonomousCommand = m_robotContainer.getAutonomousCommand();
+    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
-    // schedule the autonomous command (example)
+    // schedule the autonomous command
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
-    }*/
+    }
   }
 
   /** This function is called periodically during autonomous. */
@@ -73,15 +73,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
-    //m_robotContainer.teleopInit();
-
-    // This makes sure that the autonomous stops running when
-    // teleop starts running. If you want the autonomous to
-    // continue until interrupted by another command, remove
-    // this line or comment it out.
+    m_robotContainer.teleopInit();
     if (m_autonomousCommand != null) {
-      // m_autonomousCommand.cancel();
-      // todo: change depending on auto command
+      m_autonomousCommand.cancel();
       CommandScheduler.getInstance().cancelAll();
     }
   }

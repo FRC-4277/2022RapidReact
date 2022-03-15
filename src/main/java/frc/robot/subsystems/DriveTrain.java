@@ -38,6 +38,7 @@ public class DriveTrain extends SubsystemBase {
 
   private final DifferentialDrive drive = new DifferentialDrive(leftGroup, rightGroup);
   private final DifferentialDriveOdometry odometry;
+  private boolean odometryEnabled = true;
 
   /** Creates a new DriveTrain. */
   public DriveTrain() {
@@ -146,7 +147,13 @@ public class DriveTrain extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    odometry.update(getHeading2d(), getLeftPositionMeters(), getRightPositionMeters());
+    if (odometryEnabled) {
+      odometry.update(getHeading2d(), getLeftPositionMeters(), getRightPositionMeters());
+    }
+  }
+
+  public void setOdometryEnabled(boolean odometryEnabled) {
+    this.odometryEnabled = odometryEnabled;
   }
 
   public enum Side {

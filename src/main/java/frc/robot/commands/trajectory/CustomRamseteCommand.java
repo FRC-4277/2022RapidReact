@@ -1,4 +1,4 @@
-package frc.robot.commands;
+package frc.robot.commands.trajectory;
 
 import edu.wpi.first.math.controller.RamseteController;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;

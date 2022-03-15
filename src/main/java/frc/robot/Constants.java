@@ -39,6 +39,8 @@ public class Constants {
         public static final double TRACK_WIDTH_M = Units.inchesToMeters(21.869); // From CAD
         public static final SimpleMotorFeedforward MOTOR_FEEDFORWARD = new SimpleMotorFeedforward(0, 0, 0); // From Sysid
         public static final DifferentialDriveKinematics DRIVE_KINEMATICS = new DifferentialDriveKinematics(TRACK_WIDTH_M);
+        public static final double MAX_BATTERY_V = 12.0;
+        public static final boolean HAS_ENCODERS = true; // Set to false if encoders are not functioning
     }
 
     public static class Arm {

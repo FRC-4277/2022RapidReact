@@ -116,10 +116,16 @@ public class Arm extends SubsystemBase {
   }
 
   public void moveManualSlow(ArmDirection direction) {
+    if (direction == ArmDirection.UP && !hasBeenZeroed) {
+      return;
+    }
     motor.set(ControlMode.PercentOutput, (direction == ArmDirection.UP ? 1 : -1) * SLOW_SPEED);
   }
 
   public void moveManual(ArmDirection direction) {
+    if (direction == ArmDirection.UP && !hasBeenZeroed) {
+      return;
+    }
     motor.set(ControlMode.PercentOutput, (direction == ArmDirection.UP ? 1 : -1) * SPEED);
   }
 
@@ -132,6 +138,10 @@ public class Arm extends SubsystemBase {
    * @param state Trapezoid profile state in rad and rad/s
    */
   public void moveToState(TrapezoidProfile.State state) {
+    // TODO: find out whether arm is moving up or down in this method
+    // if (direction == ArmDirection.UP && !hasBeenZeroed) {
+    //   return;
+    // }
     holdPositionRad(state.position);
   }
 

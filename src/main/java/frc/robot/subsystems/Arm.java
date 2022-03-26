@@ -8,15 +8,12 @@ import com.ctre.phoenix.motorcontrol.*;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.networktables.EntryListenerFlags;
-import edu.wpi.first.networktables.EntryNotification;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
-import java.util.function.Consumer;
 
 import static frc.robot.Constants.Arm.*;
 
@@ -116,6 +113,7 @@ public class Arm extends SubsystemBase {
   }
 
   public void moveManualSlow(ArmDirection direction) {
+    // Safety
     if (direction == ArmDirection.UP && !hasBeenZeroed) {
       return;
     }
@@ -123,6 +121,7 @@ public class Arm extends SubsystemBase {
   }
 
   public void moveManual(ArmDirection direction) {
+    // Safety
     if (direction == ArmDirection.UP && !hasBeenZeroed) {
       return;
     }
@@ -135,17 +134,22 @@ public class Arm extends SubsystemBase {
 
   /**
    * Sets target position to that of a trapezoid profile state
+   * @param position
    * @param state Trapezoid profile state in rad and rad/s
    */
-  public void moveToState(TrapezoidProfile.State state) {
-    // TODO: find out whether arm is moving up or down in this method
-    // if (direction == ArmDirection.UP && !hasBeenZeroed) {
-    //   return;
-    // }
+  public void moveToState(ArmPosition position, TrapezoidProfile.State state) {
+    // Safety
+    if (position != ArmPosition.DOWN && !hasBeenZeroed) {
+      return;
+    }
     holdPositionRad(state.position);
   }
 
   public void holdPosition(ArmPosition position) {
+    // Safety
+    if (position != ArmPosition.DOWN && !hasBeenZeroed) {
+      return;
+    }
     // Special case for holding down is just to keep the motor running downwards, as it will hit the limit switch
     if (position == ArmPosition.DOWN) {
       moveManualSlow(ArmDirection.DOWN);

@@ -67,8 +67,10 @@ public class Constants {
     }
 
     public static class Climber {
-        public static final int LEFT_MOTOR = 6;
-        public static final int RIGHT_MOTOR = 7;
+        public static final int LEFT_MOTOR = 7;
+        public static final boolean LEFT_MOTOR_INVERSION = false;
+        public static final int RIGHT_MOTOR = 8;
+        public static final boolean RIGHT_MOTOR_INVERSION = true;
         public static final int LEFT_SOLENOID_FORWARD = 0;
         public static final int LEFT_SOLENOID_REVERSE = 1;
         public static final int RIGHT_SOLENOID_FORWARD = 2;
@@ -76,6 +78,9 @@ public class Constants {
         public static final int TALON_UNITS_PER_REV = 2048; // TalonFX integrated encoder
         public static final int GEARING = 36; // 36 from MAXPlanetary gearbox
         public static final double WINCH_DIAMETER_M = Units.inchesToMeters(0.5);
+        // Position Offsets
+        public static final double LEFT_ADDITIONAL_OFFSET_IN = 0;
+        public static final double RIGHT_ADDITIONAL_OFFSET_IN = 0;
         // Position PID Gains
         public static final Map<PIDProfile, PIDConfiguration> PID_CONSTANTS = Map.of(
             PIDProfile.NO_LOAD_UP,   PIDConfiguration.of(0, 0, 0),

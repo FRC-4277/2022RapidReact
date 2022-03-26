@@ -64,7 +64,7 @@ public class ArmMoveToCommand extends CommandBase {
     if (timer.get() <= trapezoidProfile.totalTime()) {
       // Use trapezoid profile
       TrapezoidProfile.State state = trapezoidProfile.calculate(timer.get());
-      arm.moveToState(state);
+      arm.moveToState(position, state);
     } else {
       arm.holdPosition(position);
     }

@@ -8,11 +8,13 @@ import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.util.PIDConfiguration;
 
@@ -23,6 +25,9 @@ import java.util.Map;
 import static frc.robot.Constants.Climber.*;
 
 public class Climber extends SubsystemBase {
+  private static final double MANUAL_NORMAL_SPEED = 0.4;
+  private static final double MANUAL_FAST_SPEED = 0.75;
+  private static final boolean USE_FOLLOW_MODE = true;
   private final TalonFX leftMotor = new TalonFX(LEFT_MOTOR);
   private final TalonFX rightMotor = new TalonFX(RIGHT_MOTOR);
   private final List<TalonFX> motors = List.of(leftMotor, rightMotor);
@@ -35,9 +40,35 @@ public class Climber extends SubsystemBase {
   // State variables
   private PIDProfile pidConfiguredFor;
 
+  // Shuffleboard
+  private final ShuffleboardTab tab = Shuffleboard.getTab("Climber");
+  private NetworkTableEntry leftPositionEntry, rightPositionEntry;
+
   /** Creates a new Climber. */
   public Climber() {
     motors.forEach(this::configureMotor);
+    leftMotor.setInverted(LEFT_MOTOR_INVERSION);
+    rightMotor.setInverted(RIGHT_MOTOR_INVERSION);
+    // Soft limit up
+    leftMotor.configForwardSoftLimitThreshold(metersToSensorUnits(ClimbPosition.MAXIMUM.getHeightMeters()
+            + Units.inchesToMeters(LEFT_ADDITIONAL_OFFSET_IN)));
+    leftMotor.configForwardSoftLimitEnable(true);
+    rightMotor.configForwardSoftLimitThreshold(metersToSensorUnits(ClimbPosition.MAXIMUM.getHeightMeters()
+            + Units.inchesToMeters(RIGHT_ADDITIONAL_OFFSET_IN)));
+    rightMotor.configForwardSoftLimitEnable(true);
+
+    if (USE_FOLLOW_MODE) {
+      rightMotor.follow(leftMotor);
+    }
+
+    leftPositionEntry = tab.add("Left Position", "")
+            .withPosition(0, 0)
+            .withSize(2, 1)
+            .getEntry();
+    rightPositionEntry = tab.add("Right Position", "")
+            .withPosition(0, 1)
+            .withSize(2, 1)
+            .getEntry();
   }
 
   public void configureMotor(TalonFX motor) {
@@ -47,17 +78,33 @@ public class Climber extends SubsystemBase {
     // Setup encoder
     motor.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, 100); // PID index 0, 100ms timeout
     motor.setSelectedSensorPosition(0);
-    // Setup soft limit both ways
-    motor.configForwardSoftLimitThreshold(metersToSensorUnits(ClimbPosition.MAXIMUM.getHeightMeters()));
-    motor.configForwardSoftLimitEnable(true);
+    // Setup soft limit down
     motor.configReverseSoftLimitThreshold(0);
     motor.configReverseSoftLimitEnable(true);
     // Setup position PID gains
     configurePID(PIDProfile.NO_LOAD_UP);
   }
 
+  @Override
+  public void periodic() {
+    // This method will be called once per scheduler run
+    leftPositionEntry.setString(getPositionEntry(leftMotor));
+    rightPositionEntry.setString(getPositionEntry(rightMotor));
+  }
+
+  private String getPositionEntry(TalonFX motor) {
+    int units = (int) motor.getSelectedSensorPosition();
+    double meters = sensorUnitsToMeters(units);
+    return String.format("%d u / %.2f m / %.2f in",
+            units, meters, Units.metersToInches(meters));
+  }
+
   public void moveManual(double speed) {
-    motors.forEach(motor -> motor.set(TalonFXControlMode.PercentOutput, speed));
+    if (USE_FOLLOW_MODE) {
+      leftMotor.set(TalonFXControlMode.PercentOutput, speed);
+    } else {
+      motors.forEach(motor -> motor.set(TalonFXControlMode.PercentOutput, speed));
+    }
   }
 
   public void stop(){
@@ -76,7 +123,8 @@ public class Climber extends SubsystemBase {
     motors.forEach(motor -> motor.set(TalonFXControlMode.Position, metersToSensorUnits(meters)));
   }
 
-  public void holdPosition(ClimbPosition position, boolean loaded) {
+  public void holdPosition(ClimbPosition position, boolean loaded, boolean up) {
+    configurePID(PIDProfile.fromSettings(loaded, up));
     holdPositionMeters(position.getHeightMeters());
   }
 
@@ -113,9 +161,8 @@ public class Climber extends SubsystemBase {
     motors.forEach(motor -> motor.config_kD(0, configuration.getkD()));
   }
 
-  @Override
-  public void periodic() {
-    // This method will be called once per scheduler run
+  public void moveManual(ClimberDirection direction, boolean fast) {
+    moveManual((direction == ClimberDirection.UP ? 1 : -1) * (fast ? MANUAL_FAST_SPEED : MANUAL_NORMAL_SPEED));
   }
 
   public enum ClimbPosition {
@@ -139,20 +186,14 @@ public class Climber extends SubsystemBase {
     LOADED_UP(true, true),
     LOADED_DOWN(true, false);
 
-    private static final Map<Integer, PIDProfile> lookupMap = new HashMap<>();
+    private static final Map<Map.Entry<Boolean, Boolean>, PIDProfile> profileMap = new HashMap<>();
+
     private final boolean loaded;
     private final boolean up;
-    private int flags = 0;
 
     PIDProfile(boolean loaded, boolean up) {
       this.loaded = loaded;
       this.up = up;
-      if (loaded) {
-        flags |= 1;
-      }
-      if (up) {
-        flags |= 2;
-      }
     }
 
     public boolean isLoaded() {
@@ -163,25 +204,17 @@ public class Climber extends SubsystemBase {
       return up;
     }
 
-    public int getFlags() {
-      return flags;
-    }
-
-    public static PIDProfile from(boolean loaded, boolean up) {
-      if (lookupMap.size() == 0) {
+    public static PIDProfile fromSettings(boolean loaded, boolean up) {
+      if (profileMap.size() == 0) {
         for (PIDProfile profile : values()) {
-          lookupMap.put(profile.getFlags(), profile);
+          profileMap.put(Map.entry(loaded, up), profile);
         }
       }
-
-      int flags = 0;
-      if (loaded) {
-        flags |= 1;
-      }
-      if (up) {
-        flags |= 2;
-      }
-      return lookupMap.get(flags);
+      return profileMap.get(Map.entry(loaded, up));
     }
+  }
+
+  public enum ClimberDirection {
+    UP, DOWN
   }
 }

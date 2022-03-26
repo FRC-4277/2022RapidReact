@@ -8,6 +8,8 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.Arm.ArmPosition;
+
 import static frc.robot.Constants.Arm.*;
 
 /**
@@ -45,10 +47,10 @@ public class ArmFirstDownCommand extends CommandBase {
     if (timer.get() <= trapezoidProfile.totalTime()) {
       // Use trapezoid profile
       TrapezoidProfile.State state = trapezoidProfile.calculate(timer.get());
-      arm.moveToState(state);
+      arm.moveToState(ArmPosition.DOWN, state);
     } else {
       // Trapezoid profile done, now just hold at bottom
-      arm.holdPosition(Arm.ArmPosition.DOWN);
+      arm.holdPosition(ArmPosition.DOWN);
     }
   }
 

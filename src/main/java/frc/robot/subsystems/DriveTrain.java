@@ -44,7 +44,12 @@ public class DriveTrain extends SubsystemBase {
   public DriveTrain() {
     drive.setSafetyEnabled(false);
     //this code resets the motors everytime it runs.
-    motors.forEach(WPI_TalonFX::configFactoryDefault);
+    motors.forEach(motor -> {
+      motor.configFactoryDefault();
+      motor.config_kP(0, PID_P);
+      motor.config_kI(0, PID_I);
+      motor.config_kD(0, PID_D);
+    });
 
     frontLeftMotor.setInverted(TalonFXInvertType.CounterClockwise);
     frontRightMotor.setInverted(TalonFXInvertType.Clockwise);

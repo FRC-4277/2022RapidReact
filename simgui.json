@@ -4,6 +4,7 @@
       "/FMSInfo": "FMSInfo",
       "/LiveWindow/Arm": "Subsystem",
       "/LiveWindow/BallManipulator": "Subsystem",
+      "/LiveWindow/Climber": "Subsystem",
       "/LiveWindow/DriveTrain": "Subsystem",
       "/LiveWindow/Ungrouped/DifferentialDrive[1]": "DifferentialDrive",
       "/LiveWindow/Ungrouped/Scheduler": "Scheduler",

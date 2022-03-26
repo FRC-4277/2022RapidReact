@@ -37,10 +37,14 @@ public class Constants {
         public static final double WHEEL_DIAMETER_M = Units.inchesToMeters(WHEEL_DIAMETER_IN);
         public static final double WHEEL_CIRCUMFERENCE = WHEEL_DIAMETER_M * Math.PI;
         public static final double TRACK_WIDTH_M = Units.inchesToMeters(21.869); // From CAD
-        public static final SimpleMotorFeedforward MOTOR_FEEDFORWARD = new SimpleMotorFeedforward(0, 0, 0); // From Sysid
+        public static final SimpleMotorFeedforward MOTOR_FEEDFORWARD =
+                new SimpleMotorFeedforward(0.6998, 2.316, 0.25728); // From Sysid
         public static final DifferentialDriveKinematics DRIVE_KINEMATICS = new DifferentialDriveKinematics(TRACK_WIDTH_M);
         public static final double MAX_BATTERY_V = 12.0;
         public static final boolean HAS_ENCODERS = true; // Set to false if encoders are not functioning
+        public static final double PID_P = 0.46843;
+        public static final double PID_I = 0;
+        public static final double PID_D = 0;
     }
 
     public static class Arm {

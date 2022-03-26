@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.*;
+import frc.robot.commands.auto.MoveOnlyAuto0;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Arm.ArmPosition;
 import frc.robot.subsystems.BallManipulator;
@@ -146,6 +147,7 @@ public class RobotContainer {
         SendableRegistry.setName(autoChooser, "Autonomous Command");
         // Setup autonomous command options
         autoChooser.setDefaultOption("Nothing", null);
+        autoChooser.addOption("Move Backwards", new MoveOnlyAuto0(driveTrain, arm));
 
         autoTab.add(autoChooser).withPosition(0, 0).withSize(2, 1);
     }
@@ -157,5 +159,7 @@ public class RobotContainer {
     public void teleopInit() {
         // Switch to main Shuffleboard tab at start of teleop
         Shuffleboard.selectTab(MAIN_TAB_NAME);
+        // Turn off odometry in teleop
+        driveTrain.setOdometryEnabled(false);
     }
 }

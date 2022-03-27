@@ -6,6 +6,7 @@ package frc.robot.commands.auto;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
@@ -36,6 +37,7 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
   private static final double ACCEL_2 = 2.0;
   private static final double CENTRIPETAL_2 = 2.0;
 
+  // https://www.desmos.com/calculator/oyqxjvsfcg
   private final Map<Cargo, Pose2d> STARTING_POSITIONS =
     Map.of(
         Cargo.A, new Pose2d(7.92, 2.94, new Rotation2d(5.903)),
@@ -43,12 +45,20 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
         Cargo.D, new Pose2d(6.97, 4.83, new Rotation2d(4.3))
     );
 
+  private final Map<Cargo, Translation2d> PICKUP_POSITIONS =
+    Map.of(
+        Cargo.A, new Translation2d(7.63, 1.246),
+        Cargo.B, new Translation2d(5.87, 2.49),
+        Cargo.D, new Translation2d(5.67, 5.537)
+    );
+
   /** Creates a new TwoBallAuto2. */
   public TwoBallAuto2(BallManipulator ballManipulator, DriveTrain driveTrain, Arm arm, Cargo cargo) {
+    assert cargo.isCloseBall();
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
     Pose2d startingPosition = STARTING_POSITIONS.get(cargo);
-    Pose2d endPosition = cargo.getPickupPose();
+    Pose2d endPosition = cargo.getPickupPose(PICKUP_POSITIONS.get(cargo));
     Trajectory firstTrajectory = TrajectoryUtil.generateTrajectory(startingPosition, endPosition,
             TrajectoryUtil.createConfig(VELOCITY_1, ACCEL_1, true));
 

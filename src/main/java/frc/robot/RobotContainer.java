@@ -40,7 +40,7 @@ public class RobotContainer {
     private static final String MAIN_TAB_NAME = "Main";
     private final ShuffleboardTab mainTab = Shuffleboard.getTab(MAIN_TAB_NAME);
     private final ShuffleboardTab debugTab = Shuffleboard.getTab("Debug");
-    private NetworkTableEntry autoTimes;
+    private final NetworkTableEntry autoTimes;
     // Subsystems
     private final DriveTrain driveTrain = new DriveTrain(autoTab);
     private final Arm arm = new Arm();

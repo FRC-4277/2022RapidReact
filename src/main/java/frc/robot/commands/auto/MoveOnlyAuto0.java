@@ -9,6 +9,7 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.ArmFirstDownCommand;
+import frc.robot.commands.ResetOdometryCommand;
 import frc.robot.commands.trajectory.TrajectoryUtil;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.DriveTrain;
@@ -17,17 +18,19 @@ import frc.robot.subsystems.DriveTrain;
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class MoveOnlyAuto0 extends SequentialCommandGroup {
-  private static final double VELOCITY = 2.0;
-  private static final double ACCEL = 2.0;
+  private static final double VELOCITY = 0.5;
+  private static final double ACCEL = 0.5;
   private static final double DISTANCE = Units.feetToMeters(6.5);
 
   /** Creates a new MoveOnlyAuto. */
   public MoveOnlyAuto0(DriveTrain driveTrain, Arm arm) {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
+    var start = new Pose2d();
     var config = TrajectoryUtil.createConfig(VELOCITY, ACCEL);
-    Trajectory trajectory = TrajectoryUtil.generateYTrajectory(new Pose2d(), config, -DISTANCE);
+    Trajectory trajectory = TrajectoryUtil.generateStraightTrajectory(start, config, -DISTANCE);
     addCommands(
+      new ResetOdometryCommand(driveTrain, start),
       TrajectoryUtil.createCommand(trajectory, driveTrain),
       new ArmFirstDownCommand(arm)
     );

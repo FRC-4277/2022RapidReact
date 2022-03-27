@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.*;
 import frc.robot.commands.auto.MoveOnlyAuto0;
+import frc.robot.commands.auto.ShootMoveAuto1;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Arm.ArmPosition;
 import frc.robot.subsystems.BallManipulator;
@@ -41,7 +42,7 @@ public class RobotContainer {
     private final ShuffleboardTab debugTab = Shuffleboard.getTab("Debug");
     private NetworkTableEntry autoTimes;
     // Subsystems
-    private final DriveTrain driveTrain = new DriveTrain();
+    private final DriveTrain driveTrain = new DriveTrain(autoTab);
     private final Arm arm = new Arm();
     private final BallManipulator ballManipulator = new BallManipulator();
     private final Climber climber = new Climber();
@@ -131,7 +132,7 @@ public class RobotContainer {
         rightTrigger.whileActiveOnce(shootCommand);
 
         JoystickButton startButton = new JoystickButton(xboxController, XboxController.Button.kStart.value);
-        startButton.whenHeld(armAutoClimbPositionCommand);
+        startButton.whenPressed(armAutoClimbPositionCommand);
         JoystickButton yButton = new JoystickButton(xboxController, XboxController.Button.kY.value);
         yButton.whenHeld(climberManualUpCommand);
         JoystickButton bButton = new JoystickButton(xboxController, XboxController.Button.kB.value);
@@ -147,7 +148,9 @@ public class RobotContainer {
         SendableRegistry.setName(autoChooser, "Autonomous Command");
         // Setup autonomous command options
         autoChooser.setDefaultOption("Nothing", null);
+        autoChooser.addOption("Arm Down", new ArmFirstDownCommand(arm));
         autoChooser.addOption("Move Backwards", new MoveOnlyAuto0(driveTrain, arm));
+        autoChooser.addOption("Shoot & Move Backwards", new ShootMoveAuto1(driveTrain, ballManipulator, arm));
 
         autoTab.add(autoChooser).withPosition(0, 0).withSize(2, 1);
     }
@@ -160,6 +163,6 @@ public class RobotContainer {
         // Switch to main Shuffleboard tab at start of teleop
         Shuffleboard.selectTab(MAIN_TAB_NAME);
         // Turn off odometry in teleop
-        driveTrain.setOdometryEnabled(false);
+        //driveTrain.setOdometryEnabled(false);
     }
 }

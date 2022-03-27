@@ -11,12 +11,19 @@ import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import static frc.robot.Constants.DriveTrain.*;
 
 import com.kauailabs.navx.frc.AHRS;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
+import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import java.util.List;
@@ -38,10 +45,31 @@ public class DriveTrain extends SubsystemBase {
 
   private final DifferentialDrive drive = new DifferentialDrive(leftGroup, rightGroup);
   private final DifferentialDriveOdometry odometry;
+  private final DifferentialDrivetrainSim simulator = new DifferentialDrivetrainSim(
+          DCMotor.getFalcon500(2),
+          GEARING,
+          7.5, // MOI in kg m^2 (not sure real value)
+          Units.lbsToKilograms(130),
+          WHEEL_DIAMETER_M,
+          TRACK_WIDTH_M,
+          //VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005)
+          VecBuilder.fill(0, 0, 0, 0, 0, 0, 0)
+  );
+
+  private ShuffleboardTab autoTab;
+  private NetworkTableEntry positionEntry;
+
+  // State variables
   private boolean odometryEnabled = true;
 
-  /** Creates a new DriveTrain. */
-  public DriveTrain() {
+  public DriveTrain(ShuffleboardTab autoTab) {
+    this.autoTab = autoTab;
+    positionEntry = autoTab.add("Position", "")
+      .withWidget(BuiltInWidgets.kTextView)
+      .withPosition(0, 1)
+      .withSize(2, 1)
+    .getEntry();
+
     drive.setSafetyEnabled(false);
     //this code resets the motors everytime it runs.
     motors.forEach(motor -> {
@@ -119,6 +147,12 @@ public class DriveTrain extends SubsystemBase {
     yawOffset = heading;
   }
 
+  public void resetOdometry(Pose2d pose2d) {
+    resetEncoders();
+    zeroHeading(0);
+    odometry.resetPosition(pose2d, getHeading2d());
+  }
+
   public double getLeftPositionMeters() {
     return sensorUnitsToMeters((int) Math.round((frontLeftMotor.getSelectedSensorPosition() + backLeftMotor.getSelectedSensorPosition()) / 2));
   }
@@ -155,6 +189,8 @@ public class DriveTrain extends SubsystemBase {
     if (odometryEnabled) {
       odometry.update(getHeading2d(), getLeftPositionMeters(), getRightPositionMeters());
     }
+
+    positionEntry.setString(getPose().toString());
   }
 
   public void setOdometryEnabled(boolean odometryEnabled) {

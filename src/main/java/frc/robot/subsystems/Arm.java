@@ -4,78 +4,127 @@
 
 package frc.robot.subsystems;
 
-import com.ctre.phoenix.motorcontrol.ControlMode;
-import com.ctre.phoenix.motorcontrol.DemandType;
-import com.ctre.phoenix.motorcontrol.LimitSwitchNormal;
-import com.ctre.phoenix.motorcontrol.LimitSwitchSource;
-import com.ctre.phoenix.motorcontrol.NeutralMode;
-import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
-import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
-import com.ctre.phoenix.motorcontrol.TalonFXInvertType;
+import com.ctre.phoenix.motorcontrol.*;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
-
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.networktables.EntryListenerFlags;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import static frc.robot.Constants.Arm.*;
 
 public class Arm extends SubsystemBase {
-  public static final double SPEED = 0.2;
-  public static final double SLOW_ZONE_DEGREES = 10; // Slow down within 10 degrees of end
-  public static final double SLOW_SPEED = 0.2;
+  public static final double SPEED = 0.35; // Speed to move the arm manually
+  public static final double SLOW_SPEED = 0.25; // Speed to move "slowly"
+  public static final double SLOW_ZONE_DEGREES = 10; // Slow down within <x> degrees of end, when going down
+  public static final double DEGREES_THRESHOLD = 5.0; // Degrees away from a position to be considered at the position
+  public static final double LIMIT_SWITCH_ZONE_DEGREES = 15; // Degrees of zone to allow limit switch to zero
 
-  public final TalonFX motor = new TalonFX(MOTOR);
+  private final TalonFX motor = new TalonFX(MOTOR);
+
+  // Shuffleboard
+  private final ShuffleboardTab tab = Shuffleboard.getTab("Arm");
+  private NetworkTableEntry armPositionEntry, hasBeenZeroedEntry, limitSwitchSafetySetting;
+
+  // State Variables
   private ArmDirection pidDirection = null; // Direction that PID is currently configured for
-  private boolean hasBeenZeroed = false;
+  private boolean hasBeenZeroed = false; // Whether the limit switch has been hit yet
+  private boolean isLimitSwitchResetEnabled;
 
   /** Creates a new Arm. */
   public Arm() {
+    // Reset motor config, configure inversion, and set to brake mode
     motor.configFactoryDefault();
     motor.setInverted(TalonFXInvertType.CounterClockwise);
     motor.setNeutralMode(NeutralMode.Brake);
 
+    // Select & reset encoder to up position
     motor.configSelectedFeedbackSensor(TalonFXFeedbackDevice.IntegratedSensor, 0, 100); // PID index 0, 100ms timeout
+    motor.setSelectedSensorPosition(rotationsToSensorUnits(DESIRED_ROTATIONS));
 
+    // Configure reverse (down) limit switch & have it reset encoder
     motor.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen);
-    motor.configClearPositionOnLimitR(true, 100); //100 ms timeout
+    setLimitSwitchEnabled(true);
+    isLimitSwitchResetEnabled = true;
 
     // Enable Soft Limit to ensure arm doesn't go too far
     motor.configForwardSoftLimitThreshold(rotationsToSensorUnits(DESIRED_ROTATIONS));
     motor.configForwardSoftLimitEnable(true);
-  
-    //motor.configMotionCruiseVelocity(CRUISE_VELOCITY_NATIVE);
-    //motor.configMotionAcceleration(CRUISE_ACCELERATION_NATIVE);
-    //motor.configMotionSCurveStrength(S_CURVE_SMOOTHING);
+
+    setupShuffleboard();
+  }
+
+  private void setupShuffleboard() {
+    armPositionEntry = tab.add("Position", "")
+            .withPosition(0, 0)
+            .withSize(3, 1)
+            .getEntry();
+    hasBeenZeroedEntry = tab.add("Has Been Zeroed", false)
+            .withWidget(BuiltInWidgets.kBooleanBox)
+            .withPosition(3, 0)
+            .withSize(1, 1)
+            .getEntry();
+    limitSwitchSafetySetting = tab.add("Enable Limit Switch Safe Zone", true)
+            .withWidget(BuiltInWidgets.kToggleSwitch)
+            .withPosition(0, 1)
+            .withSize(2, 1)
+            .getEntry();
+    // Default to enabling limit switch in case setting changes; periodic will override with correct value
+    limitSwitchSafetySetting.addListener(notification -> setLimitSwitchEnabled(true),
+            EntryListenerFlags.kUpdate | EntryListenerFlags.kLocal);
   }
 
   @Override
   public void periodic() {
-    SmartDashboard.putNumber("Arm Native", motor.getSelectedSensorPosition());
-    SmartDashboard.putNumber("Arm Degrees", getPositionDegrees());
-    SmartDashboard.putNumber("Arm Rad", Math.toRadians(getPositionDegrees()));
     // Set zeroed variable to true if the limit switch is ever hit
     if (!hasBeenZeroed && (motor.isRevLimitSwitchClosed() == 1)) {
       hasBeenZeroed = true;
     }
-    SmartDashboard.putBoolean("Has Been Zeroed", hasBeenZeroed);
+
+    // Special logic to make the limit switch not zero the arm UNLESS arm is near the bottom
+    // Only perform this logic if the bot has already zeroed its arm at least once
+    if (hasBeenZeroed) {
+      /* Have limit switch state be true if either are true:
+      - Limit switch safety setting is FALSE
+      - Limit switch safety setting is TRUE, and we're in the switch zone
+       */
+
+      boolean safetyEnabled = limitSwitchSafetySetting.getBoolean(true);
+      boolean desiredLimitSwitchState = !safetyEnabled || getPositionDegrees() <= LIMIT_SWITCH_ZONE_DEGREES;
+      // Update TalonFX limit switch setting only if it's changed
+      if (isLimitSwitchResetEnabled != desiredLimitSwitchState) {
+        setLimitSwitchEnabled(desiredLimitSwitchState);
+        isLimitSwitchResetEnabled = desiredLimitSwitchState;
+      }
+    }
+
+    // Shuffleboard
+    armPositionEntry.setString(String.format("%d u / %.2f deg / %.2f rad",
+            (int) motor.getSelectedSensorPosition(), getPositionDegrees(), Math.toRadians(getPositionDegrees())));
+    hasBeenZeroedEntry.setBoolean(hasBeenZeroed);
   }
 
-
-  public void moveDownManualSlow() {
-    motor.set(ControlMode.PercentOutput, -SLOW_SPEED);
+  private void setLimitSwitchEnabled(boolean enabled) {
+    motor.configClearPositionOnLimitR(enabled, 100); //100 ms timeout
   }
 
-
-  public void moveUp(double speed) {
-    motor.set(ControlMode.PercentOutput, Math.abs(speed));
-  }
-
-  public void moveUpManualSlow() {
-    motor.set(ControlMode.PercentOutput, SLOW_SPEED);
+  public void moveManualSlow(ArmDirection direction) {
+    // Safety
+    if (direction == ArmDirection.UP && !hasBeenZeroed) {
+      return;
+    }
+    motor.set(ControlMode.PercentOutput, (direction == ArmDirection.UP ? 1 : -1) * SLOW_SPEED);
   }
 
   public void moveManual(ArmDirection direction) {
+    // Safety
+    if (direction == ArmDirection.UP && !hasBeenZeroed) {
+      return;
+    }
     motor.set(ControlMode.PercentOutput, (direction == ArmDirection.UP ? 1 : -1) * SPEED);
   }
 
@@ -83,23 +132,42 @@ public class Arm extends SubsystemBase {
     motor.set(ControlMode.PercentOutput, 0);
   }
 
-  public void moveDownAutomatic(TrapezoidProfile.State state) {
-    if (getPositionDegrees() <= 10) {
-      // Position PID to hold zero
-      if (hasBeenZeroed && state != null) {
-        configurePID(ArmDirection.DOWN);
-        holdPosition(0, false);
-      } else {
-        moveDownManualSlow();
-      }
-    } else {
-      if (hasBeenZeroed && state != null) {
-        configurePID(ArmDirection.DOWN);
-        holdPosition(state.position, false);
-      } else {
-        moveManual(ArmDirection.DOWN);
-      }
+  /**
+   * Sets target position to that of a trapezoid profile state
+   * @param position
+   * @param state Trapezoid profile state in rad and rad/s
+   */
+  public void moveToState(ArmPosition position, TrapezoidProfile.State state) {
+    // Safety
+    if (position != ArmPosition.DOWN && !hasBeenZeroed) {
+      return;
     }
+    holdPositionRad(state.position);
+  }
+
+  public void holdPosition(ArmPosition position) {
+    // Safety
+    if (position != ArmPosition.DOWN && !hasBeenZeroed) {
+      return;
+    }
+    // Special case for holding down is just to keep the motor running downwards, as it will hit the limit switch
+    if (position == ArmPosition.DOWN) {
+      moveManualSlow(ArmDirection.DOWN);
+      return;
+    }
+    // Otherwise, for all other positions, use PID to hold
+    holdPositionRad(Math.toRadians(position.getDegrees()));
+  }
+
+  public void holdPositionRad(double targetAngleRad) {
+    // Configure PID direction depending on if the target position is above or below
+    configurePID(getPositionRad() < targetAngleRad ? ArmDirection.UP : ArmDirection.DOWN);
+    // Use TalonFX position PID
+    motor.set(TalonFXControlMode.Position, radToSensorUnits(targetAngleRad));
+  }
+
+  public boolean isAtPosition(ArmPosition position) {
+    return Math.abs(getPositionDegrees() - position.getDegrees()) <= DEGREES_THRESHOLD;
   }
 
   public double getPositionRotations() {
@@ -113,12 +181,6 @@ public class Arm extends SubsystemBase {
   public double getPositionRad() {
     return getPositionRotations() * Math.PI * 2;
   }
-
-  public void moveUpAutomatic(TrapezoidProfile.State state) {
-    configurePID(ArmDirection.UP);
-    holdPosition(state.position, false);
-  }
-
   public void configurePID(ArmDirection direction) {
     SmartDashboard.putString("Arm PID Dir", direction.toString());
     if (pidDirection != direction) {
@@ -129,37 +191,12 @@ public class Arm extends SubsystemBase {
     }
   }
 
-  public void holdPosition(double positionRad, boolean setPID) {
-    if (setPID) {
-      if (getPositionRad() < positionRad) {
-        configurePID(ArmDirection.UP);
-      } else {
-        configurePID(ArmDirection.DOWN);
-      }
-    }
-    double targetUnits = radToSensorUnits(positionRad);
-    motor.set(TalonFXControlMode.Position, targetUnits, DemandType.ArbitraryFeedForward, FEEDFORWARD.calculate(positionRad, 0) / 12.0);
-    SmartDashboard.putNumber("Target Pos (Native)", targetUnits);
-    SmartDashboard.putNumber("PID Error (Native)", motor.getClosedLoopError());
-  }
-
-  public boolean isBottomedOut() {
-    return motor.isRevLimitSwitchClosed() == 1;
-  }
-
-  public void moveAutomatic(ArmDirection direction, TrapezoidProfile.State state) {
-    switch(direction) {
-      case DOWN:
-        moveDownAutomatic(state);
-        break;
-      case UP:
-        moveUpAutomatic(state);
-        break;
-    }
-  }
-
   public double sensorUnitsToRotations(double sensorUnits) {
     return (sensorUnits / TALON_UNITS_PER_REV) / GEARING;
+  }
+
+  public int degreesToSensorUnits(double degrees) {
+    return rotationsToSensorUnits(degrees / 360);
   }
 
   public int radToSensorUnits(double rad) {
@@ -170,12 +207,27 @@ public class Arm extends SubsystemBase {
     return (int) Math.round(rotations * GEARING * TALON_UNITS_PER_REV);
   }
 
-  public int radsPerSecondToSensorUnits(double radsPerSecond) {
-    double rotationsPerSecond = radsPerSecond / (Math.PI * 2);
-    return rotationsToSensorUnits(rotationsPerSecond);
+  public TrapezoidProfile.State getTrapezoidState() {
+    return new TrapezoidProfile.State(getPositionRad(), 0);
   }
 
   public enum ArmDirection {
-    UP, DOWN;
+    UP, DOWN
+  }
+
+  public enum ArmPosition {
+    DOWN(0),
+    CLIMB(40),
+    UP(DESIRED_DEGREES);
+
+    private final double degrees;
+
+    ArmPosition(double degrees) {
+      this.degrees = degrees;
+    }
+
+    public double getDegrees() {
+      return degrees;
+    }
   }
 }

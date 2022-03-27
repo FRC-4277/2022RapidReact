@@ -14,7 +14,7 @@ import static frc.robot.Constants.BallManipulator.*;
 public class BallManipulator extends SubsystemBase {
   private static final double INTAKE_SPEED = 0.5;
   private static final double SHOOT_SPEED = 1;
-  private TalonSRX motor = new TalonSRX(MOTOR);
+  private final TalonSRX motor = new TalonSRX(MOTOR);
 
 
   /** Creates a new BallManipulator. */

@@ -5,16 +5,19 @@
 package frc.robot.commands;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.subsystems.BallManipulator;
+import frc.robot.subsystems.Climber;
+import frc.robot.subsystems.Climber.ClimberDirection;
 
-public class IntakeCommand extends CommandBase {
-  private final BallManipulator ballManipulator;
+public class ClimberManualMoveCommand extends CommandBase {
+  private final Climber climber;
+  private final ClimberDirection direction;
 
-  /** Creates a new IntakeCommand. */
-  public IntakeCommand(BallManipulator ballManipulator) {
-    this.ballManipulator = ballManipulator;
+  /** Creates a new ClimberManualMoveCommand. */
+  public ClimberManualMoveCommand(Climber climber, ClimberDirection direction) {
+    this.climber = climber;
+    this.direction = direction;
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(ballManipulator);
+    addRequirements(climber);
   }
 
   // Called when the command is initially scheduled.
@@ -24,13 +27,13 @@ public class IntakeCommand extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    ballManipulator.intake();
+    climber.moveManual(direction, false);
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    ballManipulator.stop();
+    climber.stop();
   }
 
   // Returns true when the command should end.

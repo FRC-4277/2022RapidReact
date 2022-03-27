@@ -40,8 +40,9 @@ public class DriveJoystickCommand extends CommandBase {
 
     double speed = -joystick.getY();
     // Limit accel if controller is > 20% either way
+    double limitedSpeed = speedLimiter.calculate(speed);
     if (Math.abs(speed) > 0.20) {
-      speed = speedLimiter.calculate(speed);
+      speed = limitedSpeed;
     }
     
     driveTrain.joystickDrive(speed, rotation, turnInPlace);

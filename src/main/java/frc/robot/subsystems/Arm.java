@@ -163,8 +163,6 @@ public class Arm extends SubsystemBase {
     // Configure PID direction depending on if the target position is above or below
     configurePID(getPositionRad() < targetAngleRad ? ArmDirection.UP : ArmDirection.DOWN);
     // Use TalonFX position PID
-    System.out.println("POSITION SETPOINT IN RAD: " + targetAngleRad);
-    System.out.println("CURRENT POSITION RAD: " + getPositionRad());
     motor.set(TalonFXControlMode.Position, radToSensorUnits(targetAngleRad));
   }
 

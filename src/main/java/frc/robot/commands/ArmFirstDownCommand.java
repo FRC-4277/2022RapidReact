@@ -40,10 +40,6 @@ public class ArmFirstDownCommand extends CommandBase {
     timer = new Timer();
     timer.reset();
     timer.start();
-    SmartDashboard.putNumber("START: ", start.position);
-    SmartDashboard.putNumber("START deg ", Math.toRadians(start.position));
-    SmartDashboard.putNumber("END: ", end.position);
-    SmartDashboard.putNumber("END deg ", Math.toRadians(end.position));
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -53,18 +49,15 @@ public class ArmFirstDownCommand extends CommandBase {
       // Use trapezoid profile
       TrapezoidProfile.State state = trapezoidProfile.calculate(timer.get());
       arm.moveToState(ArmPosition.DOWN, state);
-      System.out.println("STATE: " + state.position);
     } else {
       // Trapezoid profile done, now just hold at bottom
       arm.holdPosition(ArmPosition.DOWN);
-      System.out.println("HOLDING DOWN");
     }
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    System.out.println("END ARM");
     arm.stopMoving();
   }
 

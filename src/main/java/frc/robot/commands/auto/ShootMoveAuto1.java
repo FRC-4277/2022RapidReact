@@ -36,7 +36,6 @@ public class ShootMoveAuto1 extends SequentialCommandGroup {
       new ResetOdometryCommand(driveTrain, start),
       new ShootCommand(ballManipulator).withTimeout(2.0),
       TrajectoryUtil.createCommand(trajectory, driveTrain),
-      new PrintCommand("ARM"),
       new ArmFirstDownCommand(arm)
     );
   }

@@ -47,7 +47,7 @@ public class CustomRamseteCommand extends RamseteCommand {
                 double feedforwardVolts = MOTOR_FEEDFORWARD.calculate(velocity, acceleration);
                 double feedforward = feedforwardVolts / MAX_BATTERY_V; // Normalize to 0..1
                 if (HAS_ENCODERS && !RobotBase.isSimulation()) {
-                    double nativeVelocity = driveTrain.metersToSensorUnits(velocity) / 10; // Convert to units/100ms
+                    double nativeVelocity = (double) driveTrain.metersToSensorUnits(velocity) / 10; // Convert to units/100ms
                     driveTrain.velocityDrive(side, nativeVelocity, feedforward);
                 } else {
                     driveTrain.rawDriveSide(side, feedforward);

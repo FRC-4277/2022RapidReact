@@ -7,10 +7,14 @@ package frc.robot.subsystems;
 import com.ctre.phoenix.motorcontrol.DemandType;
 import com.ctre.phoenix.motorcontrol.TalonFXControlMode;
 import com.ctre.phoenix.motorcontrol.TalonFXInvertType;
+import com.ctre.phoenix.motorcontrol.TalonFXSimCollection;
+import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import com.ctre.phoenix.motorcontrol.can.WPI_TalonFX;
 import static frc.robot.Constants.DriveTrain.*;
 
 import com.kauailabs.navx.frc.AHRS;
+import edu.wpi.first.hal.SimDouble;
+import edu.wpi.first.hal.simulation.SimDeviceDataJNI;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -19,14 +23,17 @@ import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
 import edu.wpi.first.wpilibj.motorcontrol.MotorControllerGroup;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.CustomSimField;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class DriveTrain extends SubsystemBase {
   private final WPI_TalonFX frontLeftMotor = new WPI_TalonFX(FRONT_LEFT);
@@ -45,29 +52,29 @@ public class DriveTrain extends SubsystemBase {
 
   private final DifferentialDrive drive = new DifferentialDrive(leftGroup, rightGroup);
   private final DifferentialDriveOdometry odometry;
-  private final DifferentialDrivetrainSim simulator = new DifferentialDrivetrainSim(
-          DCMotor.getFalcon500(2),
-          GEARING,
-          7.5, // MOI in kg m^2 (not sure real value)
-          Units.lbsToKilograms(130),
-          WHEEL_DIAMETER_M,
-          TRACK_WIDTH_M,
-          //VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005)
-          VecBuilder.fill(0, 0, 0, 0, 0, 0, 0)
-  );
 
-  private ShuffleboardTab autoTab;
-  private NetworkTableEntry positionEntry;
+  // Simulation
+  private final CustomSimField simField;
+  private DifferentialDrivetrainSim simulator;
+  private List<TalonFXSimCollection> leftDriveSims;
+  private List<TalonFXSimCollection> rightDriveSims;
+  private SimDouble simAngle;
+
+  // Shuffleboard
+  private final ShuffleboardTab autoTab;
+  private final NetworkTableEntry positionEntry;
 
   // State variables
   private boolean odometryEnabled = true;
 
-  public DriveTrain(ShuffleboardTab autoTab) {
+  public DriveTrain(CustomSimField simField, ShuffleboardTab autoTab) {
+    this.simField = simField;
     this.autoTab = autoTab;
+
     positionEntry = autoTab.add("Position", "")
       .withWidget(BuiltInWidgets.kTextView)
-      .withPosition(0, 1)
-      .withSize(2, 1)
+      .withPosition(2, 0)
+      .withSize(4, 1)
     .getEntry();
 
     drive.setSafetyEnabled(false);
@@ -88,6 +95,26 @@ public class DriveTrain extends SubsystemBase {
     resetEncoders();
     zeroHeading(0);
     odometry = new DifferentialDriveOdometry(getHeading2d());
+
+    // Simulation
+    if (RobotBase.isSimulation()) {
+      simulator = new DifferentialDrivetrainSim(
+            DCMotor.getFalcon500(2),
+            GEARING,
+            7.5, // MOI in kg m^2 (not sure real value)
+            Units.lbsToKilograms(130),
+            WHEEL_DIAMETER_M,
+            TRACK_WIDTH_M,
+            //VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005) more realistic measurement std devs
+            VecBuilder.fill(0, 0, 0, 0, 0, 0, 0)
+      );
+
+      leftDriveSims = leftMotors.stream().map(TalonFX::getSimCollection).collect(Collectors.toList());
+      rightDriveSims = rightMotors.stream().map(TalonFX::getSimCollection).collect(Collectors.toList());
+
+      int dev = SimDeviceDataJNI.getSimDeviceHandle("navX-Sensor[0]");
+      simAngle = new SimDouble(SimDeviceDataJNI.getSimValueHandle(dev, "Yaw"));
+    }
   }
 
   public void joystickDrive(double forwardSpeed, double rotation, boolean turnInPlace) {
@@ -126,6 +153,7 @@ public class DriveTrain extends SubsystemBase {
     if (heading > 180 || heading < 180) {
       heading = Math.IEEEremainder(heading, 360);
     }
+    //System.out.println("getHeading() returns" + heading);
     return heading;
   }
 
@@ -154,6 +182,7 @@ public class DriveTrain extends SubsystemBase {
   }
 
   public double getLeftPositionMeters() {
+    //System.out.println("FRONT LEFT TALON FX UNITS: " + frontLeftMotor.getSelectedSensorPosition());
     return sensorUnitsToMeters((int) Math.round((frontLeftMotor.getSelectedSensorPosition() + backLeftMotor.getSelectedSensorPosition()) / 2));
   }
 
@@ -179,18 +208,52 @@ public class DriveTrain extends SubsystemBase {
     return ((sensorUnits / (double) TALON_UNITS_PER_REV) / GEARING) * WHEEL_CIRCUMFERENCE;
   }
 
-  public double metersToSensorUnits(double meters) {
-    return (meters / WHEEL_CIRCUMFERENCE) * GEARING * TALON_UNITS_PER_REV;
+  public int metersToSensorUnits(double meters) {
+    return (int) Math.round((meters / WHEEL_CIRCUMFERENCE) * GEARING * TALON_UNITS_PER_REV);
   }
 
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    if (odometryEnabled) {
+    if (odometryEnabled || RobotBase.isSimulation()) {
+      /*System.out.println("ODOMETRY UPDATE HEADING: " + getHeading2d());
+      System.out.println("ODOMETRY UPDATE METERS L: " + getLeftPositionMeters());
+      System.out.println("ODOMETRY UPDATE METERS R: " + getRightPositionMeters());*/
       odometry.update(getHeading2d(), getLeftPositionMeters(), getRightPositionMeters());
     }
 
+    // Display position
+    simField.setRobotPosition(getPose());
     positionEntry.setString(getPose().toString());
+  }
+
+  @Override
+  public void simulationPeriodic() {
+    // Update physics sim
+    simulator.setInputs(leftDriveSims.get(0).getMotorOutputLeadVoltage(),
+            -rightDriveSims.get(0).getMotorOutputLeadVoltage());
+    //System.out.println("L V: " + leftDriveSims.get(0).getMotorOutputLeadVoltage());
+    //System.out.println("R V: " + -rightDriveSims.get(0).getMotorOutputLeadVoltage());
+    simulator.update(0.02);
+
+    // Update Talon FXs
+    //System.out.println("L sim meters: " + simulator.getLeftPositionMeters());
+    //System.out.println("L sim sensor u: " + metersToSensorUnits(simulator.getLeftPositionMeters()));
+    leftDriveSims.forEach(leftDriveSim -> {
+      leftDriveSim.setIntegratedSensorRawPosition(metersToSensorUnits(simulator.getLeftPositionMeters()));
+      leftDriveSim.setIntegratedSensorVelocity(
+              (int) Math.round((double) metersToSensorUnits(simulator.getLeftVelocityMetersPerSecond()) / 10));
+    });
+    rightDriveSims.forEach(rightDriveSim -> {
+      rightDriveSim.setIntegratedSensorRawPosition(-metersToSensorUnits(simulator.getRightPositionMeters()));
+      rightDriveSim.setIntegratedSensorVelocity(
+              (int) -Math.round((double) metersToSensorUnits(simulator.getRightVelocityMetersPerSecond()) / 10));
+    });
+
+    // Update NavX
+    // NavX expects clockwise positive, but sim outputs clockwise negative
+    //System.out.println("SIM ANGLE SET TO " + Math.IEEEremainder(-simulator.getHeading().getDegrees(), 360));
+    simAngle.set(Math.IEEEremainder(-simulator.getHeading().getDegrees(), 360));
   }
 
   public void setOdometryEnabled(boolean odometryEnabled) {

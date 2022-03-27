@@ -21,7 +21,7 @@ import frc.robot.commands.auto.MoveOnlyAuto0;
 import frc.robot.commands.auto.ShootMoveAuto1;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Arm.ArmPosition;
-import frc.robot.subsystems.BallManipulator;
+import frc.robot.subsystems.CargoManipulator;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Climber.ClimberDirection;
 import frc.robot.subsystems.DriveTrain;
@@ -41,10 +41,14 @@ public class RobotContainer {
     private final ShuffleboardTab mainTab = Shuffleboard.getTab(MAIN_TAB_NAME);
     private final ShuffleboardTab debugTab = Shuffleboard.getTab("Debug");
     private final NetworkTableEntry autoTimes;
+
+    // Simulator
+    private final CustomSimField simField = new CustomSimField();
+
     // Subsystems
-    private final DriveTrain driveTrain = new DriveTrain(autoTab);
-    private final Arm arm = new Arm();
-    private final BallManipulator ballManipulator = new BallManipulator();
+    private final DriveTrain driveTrain = new DriveTrain(simField, autoTab);
+    private final Arm arm = new Arm(simField);
+    private final CargoManipulator cargoManipulator = new CargoManipulator(simField);
     private final Climber climber = new Climber();
 
     // Controllers
@@ -65,8 +69,8 @@ public class RobotContainer {
     private final ArmManualHoldCommand armManualHoldUpCommand = new ArmManualHoldCommand(arm, ArmDirection.UP);
     private final ArmManualHoldCommand armManualHoldDownCommand = new ArmManualHoldCommand(arm, ArmDirection.DOWN);
     /* Ball commands */
-    private final IntakeCommand intakeCommand = new IntakeCommand(ballManipulator);
-    private final ShootCommand shootCommand = new ShootCommand(ballManipulator);
+    private final CargoIntakeCommand cargoIntakeCommand = new CargoIntakeCommand(cargoManipulator);
+    private final CargoShootCommand cargoShootCommand = new CargoShootCommand(cargoManipulator);
     /* Climber commands */
     private final ClimberManualMoveCommand climberManualUpCommand =
             new ClimberManualMoveCommand(climber, ClimberDirection.UP);
@@ -127,9 +131,9 @@ public class RobotContainer {
         rightPOV.whenPressed(armManualHoldUpCommand);
 
         JoystickButton rightBumper = new JoystickButton(xboxController, XboxController.Button.kRightBumper.value);
-        rightBumper.whenHeld(intakeCommand);
+        rightBumper.whenHeld(cargoIntakeCommand);
         Trigger rightTrigger = new XboxTrigger(xboxController, false);
-        rightTrigger.whileActiveOnce(shootCommand);
+        rightTrigger.whileActiveOnce(cargoShootCommand);
 
         JoystickButton startButton = new JoystickButton(xboxController, XboxController.Button.kStart.value);
         startButton.whenPressed(armAutoClimbPositionCommand);
@@ -150,9 +154,15 @@ public class RobotContainer {
         autoChooser.setDefaultOption("Nothing", null);
         autoChooser.addOption("Arm Down", new ArmFirstDownCommand(arm));
         autoChooser.addOption("Move Backwards", new MoveOnlyAuto0(driveTrain, arm));
-        autoChooser.addOption("Shoot & Move Backwards", new ShootMoveAuto1(driveTrain, ballManipulator, arm));
+        autoChooser.addOption("Shoot & Move Backwards", new ShootMoveAuto1(driveTrain, cargoManipulator, arm));
 
-        autoTab.add(autoChooser).withPosition(0, 0).withSize(2, 1);
+        autoTab.add(autoChooser)
+                .withPosition(0, 0)
+                .withSize(2, 1);
+        autoTab.add(simField.getField2d())
+                .withWidget(BuiltInWidgets.kField)
+                .withPosition(0, 1)
+                .withSize(7, 4);
     }
 
     public Command getAutonomousCommand() {
@@ -163,6 +173,6 @@ public class RobotContainer {
         // Switch to main Shuffleboard tab at start of teleop
         Shuffleboard.selectTab(MAIN_TAB_NAME);
         // Turn off odometry in teleop
-        //driveTrain.setOdometryEnabled(false);
+        driveTrain.setOdometryEnabled(false);
     }
 }

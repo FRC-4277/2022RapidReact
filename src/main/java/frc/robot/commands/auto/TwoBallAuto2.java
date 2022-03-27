@@ -15,12 +15,12 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.commands.ArmFirstDownCommand;
 import frc.robot.commands.ArmHoldPositionCommand;
 import frc.robot.commands.ArmMoveToCommand;
-import frc.robot.commands.ShootCommand;
+import frc.robot.commands.CargoShootCommand;
 import frc.robot.commands.trajectory.LazyRamseteCommand;
 import frc.robot.commands.trajectory.TrajectoryUtil;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Arm.ArmPosition;
-import frc.robot.subsystems.BallManipulator;
+import frc.robot.subsystems.CargoManipulator;
 import frc.robot.subsystems.DriveTrain;
 
 import java.util.Map;
@@ -53,7 +53,7 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
     );
 
   /** Creates a new TwoBallAuto2. */
-  public TwoBallAuto2(BallManipulator ballManipulator, DriveTrain driveTrain, Arm arm, Cargo cargo) {
+  public TwoBallAuto2(CargoManipulator cargoManipulator, DriveTrain driveTrain, Arm arm, Cargo cargo) {
     assert cargo.isCloseBall();
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
@@ -64,7 +64,7 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
 
     addCommands(
       // Shoot
-      new ShootCommand(ballManipulator).withTimeout(2.0),
+      new CargoShootCommand(cargoManipulator).withTimeout(2.0),
       // Drive to ball & move arm down in parallel
       new ParallelDeadlineGroup(
         TrajectoryUtil.createCommand(firstTrajectory, driveTrain),
@@ -75,19 +75,19 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
         )
       ),
       // Pickup ball
-      new AutoBallPickupCommand(driveTrain, ballManipulator, arm),
+      new AutoBallPickupCommand(driveTrain, cargoManipulator, arm),
       // Drive back to start & move arm up in parallel
       new ParallelDeadlineGroup(
         new LazyRamseteCommand(driveTrain, () ->
           TrajectoryUtil.generateTrajectory(driveTrain.getPose(), startingPosition,
             TrajectoryUtil.createConfig(VELOCITY_2, ACCEL_2, true))
         ),
-        new ArmMoveToCommand(arm, ArmPosition.UP, false, true)
+        new ArmMoveToCommand(arm, ArmPosition.UP)
       ),
       // Hold arm & shoot
       new ParallelCommandGroup(
         new ArmHoldPositionCommand(arm, ArmPosition.UP),
-        new ShootCommand(ballManipulator)
+        new CargoShootCommand(cargoManipulator)
       )
     );
   }

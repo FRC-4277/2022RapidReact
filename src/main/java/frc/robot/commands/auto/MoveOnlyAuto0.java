@@ -7,9 +7,11 @@ package frc.robot.commands.auto;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.CustomSimField;
 import frc.robot.commands.ArmFirstDownCommand;
-import frc.robot.commands.ResetOdometryCommand;
+import frc.robot.commands.DriveResetOdometryCommand;
 import frc.robot.commands.trajectory.TrajectoryUtil;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.DriveTrain;
@@ -26,11 +28,11 @@ public class MoveOnlyAuto0 extends SequentialCommandGroup {
   public MoveOnlyAuto0(DriveTrain driveTrain, Arm arm) {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
-    var start = new Pose2d();
+    var start = !RobotBase.isSimulation() ? new Pose2d() : CustomSimField.FIELD_CENTER;
     var config = TrajectoryUtil.createConfig(VELOCITY, ACCEL);
     Trajectory trajectory = TrajectoryUtil.generateStraightTrajectory(start, config, -DISTANCE);
     addCommands(
-      new ResetOdometryCommand(driveTrain, start),
+      new DriveResetOdometryCommand(driveTrain, start),
       TrajectoryUtil.createCommand(trajectory, driveTrain),
       new ArmFirstDownCommand(arm)
     );

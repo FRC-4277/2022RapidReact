@@ -9,11 +9,14 @@ import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.CustomSimField;
+import frc.robot.CustomSimField.RobotState;
 
 import static frc.robot.Constants.Arm.*;
 
@@ -26,6 +29,8 @@ public class Arm extends SubsystemBase {
 
   private final TalonFX motor = new TalonFX(MOTOR);
 
+  private CustomSimField simField;
+
   // Shuffleboard
   private final ShuffleboardTab tab = Shuffleboard.getTab("Arm");
   private NetworkTableEntry armPositionEntry, hasBeenZeroedEntry, limitSwitchSafetySetting;
@@ -35,8 +40,8 @@ public class Arm extends SubsystemBase {
   private boolean hasBeenZeroed = false; // Whether the limit switch has been hit yet
   private boolean isLimitSwitchResetEnabled;
 
-  /** Creates a new Arm. */
-  public Arm() {
+  public Arm(CustomSimField simField) {
+    this.simField = simField;
     // Reset motor config, configure inversion, and set to brake mode
     motor.configFactoryDefault();
     motor.setInverted(TalonFXInvertType.CounterClockwise);
@@ -146,6 +151,18 @@ public class Arm extends SubsystemBase {
   }
 
   public void holdPosition(ArmPosition position) {
+    if (RobotBase.isSimulation()) {
+      switch(position) {
+        case DOWN:
+          simField.setRobotState(RobotState.ARM_DOWN);
+          break;
+        case CLIMB:
+        case UP:
+          simField.setRobotState(RobotState.ARM_UP);
+          break;
+      }
+    }
+
     // Safety
     if (position != ArmPosition.DOWN && !hasBeenZeroed) {
       return;

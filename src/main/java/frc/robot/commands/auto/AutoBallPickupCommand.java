@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.commands.trajectory.PoseUtil;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Arm.ArmPosition;
-import frc.robot.subsystems.BallManipulator;
+import frc.robot.subsystems.CargoManipulator;
 import frc.robot.subsystems.DriveTrain;
 
 public class AutoBallPickupCommand extends CommandBase {
@@ -19,7 +19,7 @@ public class AutoBallPickupCommand extends CommandBase {
   private static final double DEFAULT_MAX_TIME = 1.0; // seconds
 
   private final DriveTrain driveTrain;
-  private final BallManipulator ballManipulator;
+  private final CargoManipulator cargoManipulator;
   private final Arm arm;
   private final double maxDistance;
   private final double maxTime;
@@ -29,22 +29,22 @@ public class AutoBallPickupCommand extends CommandBase {
 
   /** Creates a new AutoBallPickupCommand.
    * @param driveTrain
-   * @param ballManipulator
+   * @param cargoManipulator
    * @param arm
    * @param distance In meters
    * @param maxTime   */
-  public AutoBallPickupCommand(DriveTrain driveTrain, BallManipulator ballManipulator, Arm arm, double distance, double maxTime) {
+  public AutoBallPickupCommand(DriveTrain driveTrain, CargoManipulator cargoManipulator, Arm arm, double distance, double maxTime) {
     this.driveTrain = driveTrain;
-    this.ballManipulator = ballManipulator;
+    this.cargoManipulator = cargoManipulator;
     this.arm = arm;
     this.maxDistance = distance;
     this.maxTime = maxTime;
     // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(driveTrain, ballManipulator);
+    addRequirements(driveTrain, cargoManipulator);
   }
 
-  public AutoBallPickupCommand(DriveTrain driveTrain, BallManipulator ballManipulator, Arm arm) {
-    this(driveTrain, ballManipulator, arm, DEFAULT_MAX_DISTANCE, DEFAULT_MAX_TIME);
+  public AutoBallPickupCommand(DriveTrain driveTrain, CargoManipulator cargoManipulator, Arm arm) {
+    this(driveTrain, cargoManipulator, arm, DEFAULT_MAX_DISTANCE, DEFAULT_MAX_TIME);
   }
 
   // Called when the command is initially scheduled.
@@ -65,14 +65,14 @@ public class AutoBallPickupCommand extends CommandBase {
     driveTrain.rawDrive(leftSpeed, rightSpeed);
     // hold arm down && intake
     arm.holdPosition(ArmPosition.DOWN);
-    ballManipulator.intake();
+    cargoManipulator.intake();
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
     driveTrain.stopDrive();
-    ballManipulator.stop();
+    cargoManipulator.stop();
   }
 
   // Returns true when the command should end.

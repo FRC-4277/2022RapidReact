@@ -357,7 +357,7 @@ public abstract class SilentIterativeRobotBase extends RobotBase {
 
         // Warn on loop time overruns
         if (m_watchdog.isExpired()) {
-            m_watchdog.printEpochs();
+            //m_watchdog.printEpochs();
         }
     }
 

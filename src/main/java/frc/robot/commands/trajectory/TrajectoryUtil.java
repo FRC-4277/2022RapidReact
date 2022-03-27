@@ -81,6 +81,7 @@ public class TrajectoryUtil {
 
     public static Trajectory generateTransformTrajectory(Pose2d start, Transform2d transform2d, TrajectoryConfig config) {
         Pose2d end = start.plus(transform2d);
+        System.out.println("END: " + end);
         return TrajectoryGenerator.generateTrajectory(start, List.of(), end, config);
     }
 
@@ -92,8 +93,12 @@ public class TrajectoryUtil {
         return generateTransformTrajectory(start, new Transform2d(translation2d, new Rotation2d()), config);
     }
 
-    public static Trajectory generateYTrajectory(Pose2d start, TrajectoryConfig config, double distanceM) {
-        return generateTranslateTrajectory(start, new Translation2d(0, distanceM), config);
+    public static Trajectory generateStraightTrajectory(Pose2d start, TrajectoryConfig config, double distanceM) {
+        if (distanceM < 0) {
+            config.setReversed(true);
+            System.out.println("REVERSED");
+        }
+        return generateTranslateTrajectory(start, new Translation2d(distanceM, 0), config);
     }
 
     public static CustomRamseteCommand createCommand(Trajectory trajectory, DriveTrain driveTrain) {

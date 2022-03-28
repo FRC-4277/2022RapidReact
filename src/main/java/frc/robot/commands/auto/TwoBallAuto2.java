@@ -12,10 +12,7 @@ import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
-import frc.robot.commands.ArmFirstDownCommand;
-import frc.robot.commands.ArmHoldPositionCommand;
-import frc.robot.commands.ArmMoveToCommand;
-import frc.robot.commands.CargoShootCommand;
+import frc.robot.commands.*;
 import frc.robot.commands.trajectory.LazyRamseteCommand;
 import frc.robot.commands.trajectory.TrajectoryUtil;
 import frc.robot.subsystems.Arm;
@@ -37,12 +34,12 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
   private static final double ACCEL_2 = 2.0;
   private static final double CENTRIPETAL_2 = 2.0;
 
-  // https://www.desmos.com/calculator/oyqxjvsfcg
+  // https://www.desmos.com/calculator/4fl6ymxk2m
   private final Map<Cargo, Pose2d> STARTING_POSITIONS =
     Map.of(
-        Cargo.A, new Pose2d(7.92, 2.94, new Rotation2d(5.903)),
-        Cargo.B, new Pose2d(7.62, 3.07, new Rotation2d(5.903)),
-        Cargo.D, new Pose2d(6.97, 4.83, new Rotation2d(4.3))
+        Cargo.A, new Pose2d(7.97, 3.02, new Rotation2d(1.1906147)),
+        Cargo.B, new Pose2d(7.64, 3.155, new Rotation2d(1.1906147)),
+        Cargo.D, new Pose2d(7.187, 4.74, new Rotation2d(5.8708))
     );
 
   private final Map<Cargo, Translation2d> PICKUP_POSITIONS =
@@ -63,6 +60,7 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
             TrajectoryUtil.createConfig(VELOCITY_1, ACCEL_1, true));
 
     addCommands(
+      new DriveResetOdometryCommand(driveTrain, startingPosition),
       // Shoot
       new CargoShootCommand(cargoManipulator).withTimeout(2.0),
       // Drive to ball & move arm down in parallel

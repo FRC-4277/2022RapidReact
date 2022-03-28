@@ -52,6 +52,18 @@
         },
         "height": 8.229599952697754,
         "image": ".\\simulation\\field.png",
+        "trajectory": {
+          "arrows": false,
+          "color": [
+            0.1746741384267807,
+            0.936274528503418,
+            0.1009708046913147,
+            255.0
+          ],
+          "style": "Track",
+          "weight": 2.0,
+          "width": 0.6984999775886536
+        },
         "width": 16.459199905395508,
         "window": {
           "name": "Field",

@@ -3,6 +3,7 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 
@@ -15,6 +16,7 @@ public class CustomSimField {
     private final Field2d field2d = new Field2d();
     private RobotState currentState = null;
     private final Map<RobotState, FieldObject2d> robotStateMap = new HashMap<>();
+    private FieldObject2d trajectoryDisplay;
     private Pose2d robotPosition = new Pose2d();
 
     public CustomSimField() {
@@ -25,6 +27,9 @@ public class CustomSimField {
         }
         hideObject(field2d.getRobotObject()); // Hide default Robot object
         setRobotState(RobotState.ARM_UP); // Start with arm up
+
+        trajectoryDisplay = field2d.getObject("trajectory");
+        hideObject(trajectoryDisplay);
     }
 
     public Field2d getField2d() {
@@ -58,6 +63,14 @@ public class CustomSimField {
 
     private void hideObject(FieldObject2d fieldObject) {
         fieldObject.setPoses();
+    }
+
+    public void setTrajectory(Trajectory trajectory) {
+        trajectoryDisplay.setTrajectory(trajectory);
+    }
+
+    public void clearTrajectory() {
+        hideObject(trajectoryDisplay);
     }
 
     public enum RobotState {

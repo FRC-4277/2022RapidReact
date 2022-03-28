@@ -17,8 +17,10 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.*;
+import frc.robot.commands.auto.Cargo;
 import frc.robot.commands.auto.MoveOnlyAuto0;
 import frc.robot.commands.auto.ShootMoveAuto1;
+import frc.robot.commands.auto.TwoBallAuto2;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Arm.ArmPosition;
 import frc.robot.subsystems.CargoManipulator;
@@ -155,6 +157,9 @@ public class RobotContainer {
         autoChooser.addOption("Arm Down", new ArmFirstDownCommand(arm));
         autoChooser.addOption("Move Backwards", new MoveOnlyAuto0(driveTrain, arm));
         autoChooser.addOption("Shoot & Move Backwards", new ShootMoveAuto1(driveTrain, cargoManipulator, arm));
+        autoChooser.addOption("Two Ball (A)", new TwoBallAuto2(cargoManipulator, driveTrain, arm, Cargo.A));
+        autoChooser.addOption("Two Ball (B)", new TwoBallAuto2(cargoManipulator, driveTrain, arm, Cargo.B));
+        autoChooser.addOption("Two Ball (D)", new TwoBallAuto2(cargoManipulator, driveTrain, arm, Cargo.D));
 
         autoTab.add(autoChooser)
                 .withPosition(0, 0)
@@ -174,5 +179,9 @@ public class RobotContainer {
         Shuffleboard.selectTab(MAIN_TAB_NAME);
         // Turn off odometry in teleop
         driveTrain.setOdometryEnabled(false);
+    }
+
+    public CustomSimField getSimField() {
+        return simField;
     }
 }

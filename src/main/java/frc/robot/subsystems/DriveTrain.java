@@ -20,7 +20,9 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.math.kinematics.DifferentialDriveWheelSpeeds;
+import edu.wpi.first.math.system.LinearSystem;
 import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.RobotBase;
@@ -99,14 +101,13 @@ public class DriveTrain extends SubsystemBase {
     // Simulation
     if (RobotBase.isSimulation()) {
       simulator = new DifferentialDrivetrainSim(
-            DCMotor.getFalcon500(2),
-            GEARING,
-            7.5, // MOI in kg m^2 (not sure real value)
-            Units.lbsToKilograms(130),
-            WHEEL_DIAMETER_M,
-            TRACK_WIDTH_M,
-            //VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005) more realistic measurement std devs
-            VecBuilder.fill(0, 0, 0, 0, 0, 0, 0)
+        // 1.5 and 0.3 are guesses for angular gains (does not matter as it's a simulation)
+        LinearSystemId.identifyDrivetrainSystem(KV_LINEAR, KA_LINEAR, 1.5, 0.3),
+        DCMotor.getFalcon500(2),
+        GEARING,
+        TRACK_WIDTH_M,
+        WHEEL_DIAMETER_M / 2,
+        VecBuilder.fill(0, 0, 0, 0, 0, 0, 0)
       );
 
       leftDriveSims = leftMotors.stream().map(TalonFX::getSimCollection).collect(Collectors.toList());

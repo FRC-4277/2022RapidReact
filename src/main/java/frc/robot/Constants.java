@@ -42,6 +42,7 @@ public class Constants {
         public static final DifferentialDriveKinematics DRIVE_KINEMATICS = new DifferentialDriveKinematics(TRACK_WIDTH_M);
         public static final double MAX_BATTERY_V = 12.0;
         public static final boolean HAS_ENCODERS = true; // Set to false if encoders are not functioning
+        // PID values found in Sysid
         public static final double PID_P = 0.46843;
         public static final double PID_I = 0;
         public static final double PID_D = 0;

@@ -19,7 +19,7 @@ public class CargoManipulator extends SubsystemBase {
   private static final double SHOOT_SPEED = 1;
   private final TalonSRX motor = new TalonSRX(MOTOR);
 
-  private CustomSimField simField;
+  private final CustomSimField simField;
   private RobotState lastState;
 
   public CargoManipulator(CustomSimField simField) {

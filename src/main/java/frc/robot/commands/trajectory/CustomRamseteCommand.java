@@ -13,11 +13,14 @@ import java.util.function.BiConsumer;
 
 import static frc.robot.Constants.DriveTrain.*;
 
+/**
+ * A subclass of RamseteCommand that utilizes velocity PID on our TalonFXs
+ */
 public class CustomRamseteCommand extends RamseteCommand {
     public CustomRamseteCommand(DriveTrain driveTrain, Trajectory trajectory, boolean dependOnDrive) {
         super(trajectory, driveTrain::getPose, new RamseteController(), DRIVE_KINEMATICS, new BiConsumer<>() {
             private double previousLeftVelocityMPS, previousRightVelocityMPS;
-            private double prevTimestamp;
+            private double previousTimestamp;
             private boolean firstRun = true;
             private final Timer timer = new Timer();
 
@@ -32,13 +35,17 @@ public class CustomRamseteCommand extends RamseteCommand {
                     timer.reset();
                     timer.start();
 
-                    prevTimestamp = time;
+                    previousTimestamp = time;
                     firstRun = false;
                 }
 
-                double dt = time - prevTimestamp;
+                double dt = time - previousTimestamp;
                 drive(leftVelocityMPS, previousLeftVelocityMPS, dt, DriveTrain.Side.LEFT);
                 drive(rightVelocityMPS, previousRightVelocityMPS, dt, DriveTrain.Side.RIGHT);
+
+                previousLeftVelocityMPS = leftVelocityMPS;
+                previousRightVelocityMPS = rightVelocityMPS;
+                previousTimestamp = time;
             }
 
             private void drive(double velocity, double previousVelocity,
@@ -47,7 +54,7 @@ public class CustomRamseteCommand extends RamseteCommand {
                 double feedforwardVolts = MOTOR_FEEDFORWARD.calculate(velocity, acceleration);
                 double feedforward = feedforwardVolts / MAX_BATTERY_V; // Normalize to 0..1
                 if (HAS_ENCODERS && !RobotBase.isSimulation()) {
-                    double nativeVelocity = (double) driveTrain.metersToSensorUnits(velocity) / 10; // Convert to units/100ms
+                    double nativeVelocity = ((double) driveTrain.metersToSensorUnits(velocity)) / 10; // Convert to units/100ms
                     driveTrain.velocityDrive(side, nativeVelocity, feedforward);
                 } else {
                     driveTrain.rawDriveSide(side, feedforward);

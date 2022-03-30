@@ -27,6 +27,7 @@ import frc.robot.subsystems.CargoManipulator;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Climber.ClimberDirection;
 import frc.robot.subsystems.DriveTrain;
+import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Arm.ArmDirection;
 import frc.robot.util.XboxTrigger;
 
@@ -52,6 +53,7 @@ public class RobotContainer {
     private final Arm arm = new Arm(simField);
     private final CargoManipulator cargoManipulator = new CargoManipulator(simField);
     private final Climber climber = new Climber();
+    private final Vision vision = new Vision(mainTab);
 
     // Controllers
     private final Joystick joystick = new Joystick(LOGITECH_JOYSTICK);

@@ -14,9 +14,9 @@ import frc.robot.subsystems.CargoManipulator;
 import frc.robot.subsystems.DriveTrain;
 
 public class AutoBallPickupCommand extends CommandBase {
-  private static final double DRIVE_SPEED = 0.175;
+  static final double DRIVE_SPEED = 0.2;
   private static final double DEFAULT_MAX_DISTANCE = 0.70; // meters
-  private static final double DEFAULT_MAX_TIME = 1.0; // seconds
+  private static final double DEFAULT_MAX_TIME = 3.5; // seconds
 
   private final DriveTrain driveTrain;
   private final CargoManipulator cargoManipulator;
@@ -45,6 +45,10 @@ public class AutoBallPickupCommand extends CommandBase {
 
   public AutoBallPickupCommand(DriveTrain driveTrain, CargoManipulator cargoManipulator, Arm arm) {
     this(driveTrain, cargoManipulator, arm, DEFAULT_MAX_DISTANCE, DEFAULT_MAX_TIME);
+  }
+
+  public AutoBallPickupCommand(DriveTrain driveTrain, CargoManipulator cargoManipulator, Arm arm, double distance) {
+    this(driveTrain, cargoManipulator, arm, distance, DEFAULT_MAX_TIME);
   }
 
   // Called when the command is initially scheduled.
@@ -78,8 +82,9 @@ public class AutoBallPickupCommand extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
+    System.out.println(startPose.getTranslation().getDistance(driveTrain.getPose().getTranslation()));
     // Finish if timer time is over max time OR distance is over max distance
     return timer.get() > maxTime ||
-            (PoseUtil.getDistance(startPose, driveTrain.getPose()) > maxDistance);
+            startPose.getTranslation().getDistance(driveTrain.getPose().getTranslation()) > maxDistance;
   }
 }

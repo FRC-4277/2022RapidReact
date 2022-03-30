@@ -124,6 +124,7 @@ public class DriveTrain extends SubsystemBase {
 
   public void rawDrive(double left, double right) {
     drive.tankDrive(left, right, false);
+    System.out.println();
   }
 
   public void stopDrive() {
@@ -211,6 +212,10 @@ public class DriveTrain extends SubsystemBase {
 
   public int metersToSensorUnits(double meters) {
     return (int) Math.round((meters / WHEEL_CIRCUMFERENCE) * GEARING * TALON_UNITS_PER_REV);
+  }
+
+  public static double convertPercentToVelocity(double percentOutput) {
+    return MOTOR_FEEDFORWARD.maxAchievableVelocity(MAX_BATTERY_V * percentOutput, 0);
   }
 
   @Override

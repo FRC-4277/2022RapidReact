@@ -10,6 +10,7 @@
       "/LiveWindow/Ungrouped/DifferentialDrive[1]": "DifferentialDrive",
       "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
       "/LiveWindow/Ungrouped/navX-Sensor[4]": "Gyro",
+      "/LiveWindow/Vision": "Subsystem",
       "/Shuffleboard/Autonomous/Autonomous Command": "String Chooser",
       "/Shuffleboard/Autonomous/Field": "Field2d"
     },

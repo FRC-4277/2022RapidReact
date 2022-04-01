@@ -30,20 +30,24 @@
           "width": 0.0
         },
         "Robot Arm Down": {
+          "image": ".\\simulation\\robot_arm_down.png",
           "length": 1.1278870105743408,
           "width": 0.6984999775886536
         },
         "Robot Arm Up": {
           "arrows": false,
+          "image": ".\\simulation\\robot_arm_up.png",
           "length": 1.1278870105743408,
           "width": 0.6984999775886536
         },
         "Robot Intaking": {
+          "image": ".\\simulation\\robot_intaking.png",
           "length": 1.1278870105743408,
           "width": 0.6984999775886536
         },
         "Robot Shooting": {
           "arrows": false,
+          "image": ".\\simulation\\robot_shooting.png",
           "length": 1.1278870105743408,
           "width": 0.6984999775886536
         },

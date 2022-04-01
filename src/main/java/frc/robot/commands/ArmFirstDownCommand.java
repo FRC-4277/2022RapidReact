@@ -5,6 +5,7 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.Arm;
@@ -64,6 +65,6 @@ public class ArmFirstDownCommand extends CommandBase {
   @Override
   public boolean isFinished() {
     // No need to stop, it will stop itself with limit switch
-    return arm.isAtPosition(ArmPosition.DOWN);
+    return arm.isAtPosition(ArmPosition.DOWN) || (RobotBase.isSimulation() && timer.hasElapsed(trapezoidProfile.totalTime()));
   }
 }

@@ -28,8 +28,9 @@ public class Arm extends SubsystemBase {
   public static final double LIMIT_SWITCH_ZONE_DEGREES = 15; // Degrees of zone to allow limit switch to zero
 
   private final TalonFX motor = new TalonFX(MOTOR);
+  private final TalonFXSimCollection motorSim = motor.getSimCollection();
 
-  private CustomSimField simField;
+  private final CustomSimField simField;
 
   // Shuffleboard
   private final ShuffleboardTab tab = Shuffleboard.getTab("Arm");
@@ -152,6 +153,7 @@ public class Arm extends SubsystemBase {
 
   public void holdPosition(ArmPosition position) {
     if (RobotBase.isSimulation()) {
+      // Update robot in field
       switch(position) {
         case DOWN:
           simField.setRobotState(RobotState.ARM_DOWN);
@@ -161,6 +163,9 @@ public class Arm extends SubsystemBase {
           simField.setRobotState(RobotState.ARM_UP);
           break;
       }
+
+      // Set arm encoder
+      motorSim.setIntegratedSensorRawPosition(degreesToSensorUnits(position.getDegrees()));
     }
 
     // Safety

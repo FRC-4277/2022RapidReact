@@ -5,12 +5,11 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.TrajectoryConfig;
+import edu.wpi.first.math.trajectory.constraint.CentripetalAccelerationConstraint;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
-import frc.robot.commands.ArmMoveToCommand;
-import frc.robot.commands.CargoIntakeCommand;
-import frc.robot.commands.CargoShootCommand;
-import frc.robot.commands.DriveResetOdometryCommand;
+import frc.robot.commands.*;
 import frc.robot.commands.trajectory.LazyRamseteCommand;
 import frc.robot.commands.trajectory.TrajectoryUtil;
 import frc.robot.subsystems.Arm;
@@ -21,8 +20,8 @@ import frc.robot.subsystems.DriveTrain;
 import java.util.Map;
 
 public class TwoBallAuto2 extends SequentialCommandGroup {
-    private static final double MAX_VELOCITY = 0.5;
-    private static final double MAX_ACCEL = 0.25;
+    private static final double MAX_VELOCITY = 0.75;
+    private static final double MAX_ACCEL = 0.250;
 
     // https://www.desmos.com/calculator/5gvpoxky3g
 
@@ -42,7 +41,7 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
 
     private final Map<Cargo, Double> PICKUP_DISTANCE =
         Map.of(
-                Cargo.A, 1.3,
+                Cargo.A, 1.3 - Units.inchesToMeters(36),
                 Cargo.B, 1.45,
                 Cargo.D, 1.5
         );
@@ -66,15 +65,19 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
 
         System.out.println(pickupPosition);
 
+        TrajectoryConfig backConfig = TrajectoryUtil.createConfig(3, 2);
+        backConfig.addConstraint(new CentripetalAccelerationConstraint(.5));
+
         addCommands(
             // Reset odometry
             new DriveResetOdometryCommand(driveTrain, startingPosition),
             // Move arm all the way down
-            new ArmMoveToCommand(arm, ArmPosition.DOWN, false, false),
-            // Drive to pickup position with intake moving
+            new ArmFirstDownCommand(arm),
+            // Drive to pickup position with intake moving and arm is held down
             new ParallelDeadlineGroup(
                 TrajectoryUtil.createCommand(pickupTrajectory, driveTrain),
-                new CargoIntakeCommand(cargoManipulator)
+                new CargoIntakeCommand(cargoManipulator),
+                new ArmHoldPositionCommand(arm, ArmPosition.DOWN)
             ),
             // Pickup ball & drive a little further
             new AutoBallPickupCommand(driveTrain, cargoManipulator, arm, PICKUP_DISTANCE.get(cargo)),
@@ -82,7 +85,8 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
             new ParallelDeadlineGroup(
                 new LazyRamseteCommand(driveTrain,
                         () -> TrajectoryUtil.generateTrajectory(driveTrain.getPose(), SHOOT_POSITIONS.get(cargo),
-                                TrajectoryUtil.createConfig(MAX_VELOCITY, MAX_ACCEL)), true),
+                                backConfig
+                                ), true),
                 new ArmMoveToCommand(arm, ArmPosition.UP, false, false),
                 new CargoIntakeCommand(cargoManipulator)
             ),

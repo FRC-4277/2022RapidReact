@@ -19,6 +19,7 @@ import frc.robot.subsystems.CargoManipulator;
 import frc.robot.subsystems.DriveTrain;
 
 import java.util.Map;
+import java.util.function.Supplier;
 
 public class TwoBallAuto2 extends SequentialCommandGroup {
     private static final double MAX_VELOCITY = 0.5;
@@ -42,16 +43,23 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
 
     private final Map<Cargo, Double> PICKUP_DISTANCE =
         Map.of(
-                Cargo.A, 1.3,
-                Cargo.B, 1.45,
-                Cargo.D, 1.5
+            Cargo.A, 1.3,
+            Cargo.B, 1.45,
+            Cargo.D, 1.5
+        );
+
+    private final Map<Cargo, Pose2d> BEFORE_SHOOT_POSITIONS =
+        Map.of(
+            Cargo.A, new Pose2d(8.68,1.584, new Rotation2d(Math.PI)),
+            Cargo.B, new Pose2d(5.7,3.548, new Rotation2d(5.3)),
+            Cargo.D, new Pose2d(6.53, 6.25, new Rotation2d(4.1))
         );
 
     private final Map<Cargo, Pose2d> SHOOT_POSITIONS =
         Map.of(
-                Cargo.A, new Pose2d(7.97, 3.02, new Rotation2d(1.1906147)),
-                Cargo.B, new Pose2d(7.64, 3.155, new Rotation2d(1.1906147)),
-                Cargo.D, new Pose2d(7.187, 4.74, new Rotation2d(5.8708))
+            Cargo.A, new Pose2d(7.97, 3.02, new Rotation2d(1.1906147)),
+            Cargo.B, new Pose2d(7.64, 3.155, new Rotation2d(1.1906147)),
+            Cargo.D, new Pose2d(7.187, 4.74, new Rotation2d(5.8708))
         );
 
     public TwoBallAuto2(CargoManipulator cargoManipulator, DriveTrain driveTrain, Arm arm, Cargo cargo) {
@@ -78,11 +86,20 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
             ),
             // Pickup ball & drive a little further
             new AutoBallPickupCommand(driveTrain, cargoManipulator, arm, PICKUP_DISTANCE.get(cargo)),
-            // Drive back, keep running intake & put arm up all at same time
+            // Drive back (three point turn), keep running intake & put arm up all at same time
             new ParallelDeadlineGroup(
-                new LazyRamseteCommand(driveTrain,
-                        () -> TrajectoryUtil.generateTrajectory(driveTrain.getPose(), SHOOT_POSITIONS.get(cargo),
-                                TrajectoryUtil.createConfig(MAX_VELOCITY, MAX_ACCEL)), true),
+                new SequentialCommandGroup(
+                    // Drive backwards to BEFORE shoot position
+                    new LazyRamseteCommand(driveTrain, () -> {
+                        var config1 = TrajectoryUtil.createConfig(MAX_VELOCITY, MAX_ACCEL, true);
+                        return TrajectoryUtil.generateTrajectory(driveTrain.getPose(), BEFORE_SHOOT_POSITIONS.get(cargo), config1);
+                    }, false),
+                    // Drive forwards to shoot position
+                    new LazyRamseteCommand(driveTrain, () -> {
+                        var config1 = TrajectoryUtil.createConfig(MAX_VELOCITY, MAX_ACCEL);
+                        return TrajectoryUtil.generateTrajectory(driveTrain.getPose(), SHOOT_POSITIONS.get(cargo), config1);
+                    })
+                ),
                 new ArmMoveToCommand(arm, ArmPosition.UP, false, false),
                 new CargoIntakeCommand(cargoManipulator)
             ),

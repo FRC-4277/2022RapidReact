@@ -61,12 +61,14 @@ public class TrajectoryUtil {
 
     public static TrajectoryConfig createConfig(double maxVel, double maxAccel, boolean reversed) {
         TrajectoryConfig config = createConfig(maxVel, maxAccel);
+        config.setKinematics(Constants.DriveTrain.DRIVE_KINEMATICS);
         config.setReversed(reversed);
         return config;
     }
 
     public static TrajectoryConfig createConfig(double maxVel, double maxAccel, double maxCentripetalAccel) {
         var config = new TrajectoryConfig(maxVel, maxAccel);
+        config.setKinematics(Constants.DriveTrain.DRIVE_KINEMATICS);
         config.addConstraint(new CentripetalAccelerationConstraint(maxCentripetalAccel));
         return config;
     }
@@ -74,6 +76,7 @@ public class TrajectoryUtil {
     public static TrajectoryConfig createConfig(double maxVel, double maxAccel,
                                                 boolean reversed, double maxCentripetalAccel) {
         var config = new TrajectoryConfig(maxVel, maxAccel);
+        config.setKinematics(Constants.DriveTrain.DRIVE_KINEMATICS);
         config.setReversed(reversed);
         config.addConstraint(new CentripetalAccelerationConstraint(maxCentripetalAccel));
         return config;

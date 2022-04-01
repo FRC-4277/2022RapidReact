@@ -5,5 +5,5 @@
   "maxAcceleration": 2.0,
   "trackWidth": 0.5554726,
   "gameName": "Rapid React",
-  "outputDir": ""
+  "outputDir": ".."
 }

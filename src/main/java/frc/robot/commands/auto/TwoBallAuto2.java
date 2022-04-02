@@ -21,10 +21,10 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class TwoBallAuto2 extends SequentialCommandGroup {
-    private static final double MAX_VELOCITY = 0.75;
-    private static final double MAX_ACCEL = 0.250;
+    private static final double MAX_VELOCITY = 2.0;
+    private static final double MAX_ACCEL = 0.75;
 
-    // https://www.desmos.com/calculator/jqch30fe1x
+    // https://www.desmos.com/calculator/ygk03qdemn
 
     private final Map<Cargo, Pose2d> STARTING_POSITIONS =
         Map.of(
@@ -49,14 +49,14 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
 
     private final Map<Cargo, Pose2d> BEFORE_SHOOT_POSITIONS =
         Map.of(
-            Cargo.A, new Pose2d(8.68,1.584, new Rotation2d(Math.PI)),
+            Cargo.A, new Pose2d(8.5,1.584, new Rotation2d(Math.PI)),
             Cargo.B, new Pose2d(5.7,3.548, new Rotation2d(5.3)),
             Cargo.D, new Pose2d(6.53, 6.25, new Rotation2d(4.1))
         );
 
     private final Map<Cargo, Pose2d> SHOOT_POSITIONS =
         Map.of(
-            Cargo.A, new Pose2d(7.97, 3.02, new Rotation2d(1.1906147)),
+            Cargo.A, new Pose2d(7.84, 2.82, new Rotation2d(1.1906147)),
             Cargo.B, new Pose2d(7.64, 3.155, new Rotation2d(1.1906147)),
             Cargo.D, new Pose2d(7.187, 4.74, new Rotation2d(5.8708))
         );

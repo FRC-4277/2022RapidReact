@@ -13,6 +13,7 @@ import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -146,6 +147,13 @@ public class RobotContainer {
         xButton.whenHeld(climberManualDownFastCommand);
         JoystickButton aButton = new JoystickButton(xboxController, XboxController.Button.kA.value);
         aButton.whenHeld(climberManualDownCommand);
+
+        JoystickButton backButton = new JoystickButton(xboxController, XboxController.Button.kBack.value);
+        backButton.whenHeld(new ParallelCommandGroup(
+            new ArmMoveToCommand(arm, ArmPosition.DOWN),
+            new CargoIntakeCommand(cargoManipulator)
+        ));
+        backButton.whenReleased(armAutoUpCommand);
     }
 
     private void setupAutonomousTab() {

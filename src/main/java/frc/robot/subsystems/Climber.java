@@ -27,7 +27,7 @@ import static frc.robot.Constants.Climber.*;
 public class Climber extends SubsystemBase {
   private static final double MANUAL_NORMAL_SPEED = 0.4;
   private static final double MANUAL_FAST_SPEED = 0.75;
-  private static final boolean USE_FOLLOW_MODE = true;
+  private static final boolean USE_FOLLOW_MODE = false;
   private final TalonFX leftMotor = new TalonFX(LEFT_MOTOR);
   private final TalonFX rightMotor = new TalonFX(RIGHT_MOTOR);
   private final List<TalonFX> motors = List.of(leftMotor, rightMotor);

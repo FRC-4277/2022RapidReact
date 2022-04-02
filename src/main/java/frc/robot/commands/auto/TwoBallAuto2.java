@@ -41,7 +41,7 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
 
     private final Map<Cargo, Double> PICKUP_DISTANCE =
         Map.of(
-            Cargo.A, 1.3 - Units.inchesToMeters(36),
+            Cargo.A, 1.3 - Units.inchesToMeters(34.5),
             Cargo.B, 1.45,
             Cargo.D, 1.5
         );
@@ -55,7 +55,7 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
 
     private final Map<Cargo, Pose2d> SHOOT_POSITIONS =
         Map.of(
-            Cargo.A, new Pose2d(7.84, 2.82, new Rotation2d(1.1906147)),
+            Cargo.A, new Pose2d(7.72, 2.82, new Rotation2d(1.1906147)),
             Cargo.B, new Pose2d(7.64, 3.155, new Rotation2d(1.1906147)),
             Cargo.D, new Pose2d(7.187, 4.74, new Rotation2d(5.8708))
         );

@@ -54,7 +54,7 @@ public class Arm extends SubsystemBase {
 
     // Configure reverse (down) limit switch & have it reset encoder
     motor.configReverseLimitSwitchSource(LimitSwitchSource.FeedbackConnector, LimitSwitchNormal.NormallyOpen);
-    setLimitSwitchEnabled(false);
+    setLimitSwitchEnabled(true);
     isLimitSwitchResetEnabled = true;
 
     // Enable Soft Limit to ensure arm doesn't go too far

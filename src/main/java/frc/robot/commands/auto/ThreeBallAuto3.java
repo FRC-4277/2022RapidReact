@@ -25,7 +25,7 @@ public class ThreeBallAuto3 extends SequentialCommandGroup {
     private static final double SLOW_DOWN_RADIUS = Units.feetToMeters(2.0); // Radius around balls to slow down
     private static final double SLOW_DOWN_VELOCITY = 1.0;
     private static final double MAX_VELOCITY = 2.0;
-    private static final double MAX_ACCEL = 0.5;
+    private static final double MAX_ACCEL = 0.75;
     private static final double LAST_BALL_DISTANCE_THRESHOLD = Units.feetToMeters(1.5);
 
     // https://www.desmos.com/calculator/akzhznta0w
@@ -54,7 +54,7 @@ public class ThreeBallAuto3 extends SequentialCommandGroup {
             // Reset odometry
             new DriveResetOdometryCommand(driveTrain, firstTrajectory.getInitialPose()),
             // Shoot
-            new CargoShootCommand(cargoManipulator).withTimeout(3.0),
+            new CargoShootCommand(cargoManipulator).withTimeout(2.0),
             // Drive backwards while moving arm down
             new ParallelDeadlineGroup(
                 TrajectoryUtil.createCommand(firstTrajectory, driveTrain),

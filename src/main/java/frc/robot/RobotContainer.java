@@ -8,6 +8,7 @@ import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -42,6 +43,13 @@ public class RobotContainer {
     private final ShuffleboardTab mainTab = Shuffleboard.getTab(MAIN_TAB_NAME);
     private final ShuffleboardTab debugTab = Shuffleboard.getTab("Debug");
     private final NetworkTableEntry autoTimes;
+    {
+        autoTimes = debugTab.add("Auto Path Times", "")
+                .withWidget(BuiltInWidgets.kTextView)
+                .withPosition(0, 0)
+                .withSize(5, 2)
+                .getEntry();
+    }
 
     // Simulator
     private final CustomSimField simField = new CustomSimField();
@@ -92,11 +100,8 @@ public class RobotContainer {
         driveTrain.setDefaultCommand(driveJoystickCommand);
         // Shuffleboard
         setupAutonomousTab();
-        autoTimes = debugTab.add("Auto Path Times", "")
-                .withWidget(BuiltInWidgets.kTextView)
-                .withPosition(0, 0)
-                .withSize(5, 2)
-                .getEntry();
+        // Disable LiveWindow as we don't need it
+        LiveWindow.disableAllTelemetry();
     }
 
     public void addAutoTime(String path, double seconds) {
@@ -167,6 +172,7 @@ public class RobotContainer {
         autoChooser.addOption("Two Ball (A)", new TwoBallAuto2(cargoManipulator, driveTrain, arm, Cargo.A));
         autoChooser.addOption("Two Ball (B)", new TwoBallAuto2(cargoManipulator, driveTrain, arm, Cargo.B));
         autoChooser.addOption("Two Ball (D)", new TwoBallAuto2(cargoManipulator, driveTrain, arm, Cargo.D));
+        autoChooser.addOption("Three Ball (A)", new ThreeBallAuto3(driveTrain, cargoManipulator, arm));
 
         autoTab.add(autoChooser)
                 .withPosition(0, 0)

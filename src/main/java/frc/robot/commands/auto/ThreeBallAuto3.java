@@ -7,13 +7,11 @@ import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.trajectory.constraint.EllipticalRegionConstraint;
 import edu.wpi.first.math.trajectory.constraint.MaxVelocityConstraint;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
-import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
-import edu.wpi.first.wpilibj2.command.ProxyScheduleCommand;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.commands.*;
 import frc.robot.commands.trajectory.TrajectoryUtil;
 import frc.robot.subsystems.Arm;
+import frc.robot.subsystems.Arm.ArmPosition;
 import frc.robot.subsystems.CargoManipulator;
 import frc.robot.subsystems.DriveTrain;
 
@@ -29,6 +27,8 @@ public class ThreeBallAuto3 extends SequentialCommandGroup {
     private static final double MAX_VELOCITY = 2.0;
     private static final double MAX_ACCEL = 0.5;
     private static final double LAST_BALL_DISTANCE_THRESHOLD = Units.feetToMeters(1.5);
+
+    // https://www.desmos.com/calculator/akzhznta0w
 
     public ThreeBallAuto3(DriveTrain driveTrain, CargoManipulator cargoManipulator, Arm arm) {
         var reverseConfig = TrajectoryUtil.createConfig(MAX_VELOCITY, MAX_ACCEL, true);
@@ -48,7 +48,7 @@ public class ThreeBallAuto3 extends SequentialCommandGroup {
             return;
         }
 
-        System.out.println("FIRST THREE BALL POSE: " + firstTrajectory.getInitialPose());
+        LastBallTracker lastBallTracker = new LastBallTracker(Cargo.B, driveTrain::getPose);
 
         addCommands(
             // Reset odometry
@@ -63,14 +63,12 @@ public class ThreeBallAuto3 extends SequentialCommandGroup {
             // Drive forwards while intake is running to pickup balls
             new ParallelDeadlineGroup(
                 TrajectoryUtil.createCommand(secondTrajectory, driveTrain),
-                new ArmHoldPositionCommand(arm, Arm.ArmPosition.DOWN),
-                // Intake until last ball is done, then move arm up & keep intaking
+                // Hold arm down UNTIL ball is picked up
+                new ArmHoldPositionCommand(arm, ArmPosition.DOWN)
+                .until(lastBallTracker::hasPickedUpBall)
+                .andThen(new ArmMoveToCommand(arm, ArmPosition.UP)),
+                // Keep intaking
                 new CargoIntakeCommand(cargoManipulator)
-                .until(() -> new LastBallTracker(Cargo.B, driveTrain::getPose).hasPickedUpBall())
-                .andThen(new ParallelCommandGroup(
-                    new ProxyScheduleCommand(new ArmMoveToCommand(arm, Arm.ArmPosition.UP)),
-                    new CargoIntakeCommand(cargoManipulator)
-                ))
             ),
             // Shoot
             new CargoShootCommand(cargoManipulator)

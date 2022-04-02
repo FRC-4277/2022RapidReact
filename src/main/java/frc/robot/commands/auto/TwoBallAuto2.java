@@ -18,7 +18,6 @@ import frc.robot.subsystems.CargoManipulator;
 import frc.robot.subsystems.DriveTrain;
 
 import java.util.Map;
-import java.util.function.Supplier;
 
 public class TwoBallAuto2 extends SequentialCommandGroup {
     private static final double MAX_VELOCITY = 2.0;

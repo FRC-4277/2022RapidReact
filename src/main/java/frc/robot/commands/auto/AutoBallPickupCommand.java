@@ -82,7 +82,6 @@ public class AutoBallPickupCommand extends CommandBase {
   // Returns true when the command should end.
   @Override
   public boolean isFinished() {
-    System.out.println(startPose.getTranslation().getDistance(driveTrain.getPose().getTranslation()));
     // Finish if timer time is over max time OR distance is over max distance
     return timer.get() > maxTime ||
             startPose.getTranslation().getDistance(driveTrain.getPose().getTranslation()) > maxDistance;

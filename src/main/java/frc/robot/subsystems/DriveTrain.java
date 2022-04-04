@@ -124,7 +124,6 @@ public class DriveTrain extends SubsystemBase {
 
   public void rawDrive(double left, double right) {
     drive.tankDrive(left, right, false);
-    System.out.println();
   }
 
   public void stopDrive() {

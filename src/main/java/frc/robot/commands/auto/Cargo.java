@@ -31,9 +31,6 @@ public enum Cargo {
      * @return The pose where the robot will be to pickup the cargo
      */
     public Pose2d getPickupPose(Translation2d pickupPosition) {
-        System.out.print(">>>");
-        System.out.print(position);
-        System.out.print(pickupPosition);
         Rotation2d rotation = new Rotation2d(
             Math.atan2(position.getY() - pickupPosition.getY(), 
             position.getX() - pickupPosition.getX()));

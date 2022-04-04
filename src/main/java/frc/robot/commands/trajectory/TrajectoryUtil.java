@@ -91,6 +91,10 @@ public class TrajectoryUtil {
         return TrajectoryGenerator.generateTrajectory(start, List.of(), end, config);
     }
 
+    public static Trajectory generateTrajectory(Pose2d start, List<Translation2d> waypoints, Pose2d end, TrajectoryConfig config) {
+        return TrajectoryGenerator.generateTrajectory(start, waypoints, end, config);
+    }
+
     public static Trajectory generateTranslateTrajectory(Pose2d start, Translation2d translation2d, TrajectoryConfig config) {
         return generateTransformTrajectory(start, new Transform2d(translation2d, new Rotation2d()), config);
     }

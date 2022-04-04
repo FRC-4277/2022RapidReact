@@ -173,6 +173,7 @@ public class RobotContainer {
         autoChooser.addOption("Two Ball (B)", new TwoBallAuto2(cargoManipulator, driveTrain, arm, Cargo.B));
         autoChooser.addOption("Two Ball (D)", new TwoBallAuto2(cargoManipulator, driveTrain, arm, Cargo.D));
         autoChooser.addOption("Three Ball (A)", new ThreeBallAuto3(driveTrain, cargoManipulator, arm));
+        autoChooser.addOption("Four Ball (A)", new FourBallAuto4(driveTrain, cargoManipulator, arm));
 
         autoTab.add(autoChooser)
                 .withPosition(0, 0)

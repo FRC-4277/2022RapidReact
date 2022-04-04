@@ -35,7 +35,7 @@ public class ArmFirstDownCommand extends CommandBase {
     TrapezoidProfile.State start = arm.getTrapezoidState();
     // Have the end position be a few degrees above 0 just in case the arm isn't in perfect start position
     TrapezoidProfile.State end = new TrapezoidProfile.State(Math.toRadians(Arm.SLOW_ZONE_DEGREES / 2), 0);
-    trapezoidProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(4, 2), end, start);
+    trapezoidProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(6, 3), end, start);
 
     timer = new Timer();
     timer.reset();

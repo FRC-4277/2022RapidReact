@@ -36,7 +36,6 @@ public class WaypointReader {
                     continue;
                 }
                 String[] split = line.split(",");
-                System.out.println("SPLIT[1] is " + split[1]);
                 controlVectors.add(
                         new Spline.ControlVector(
                                 new double[] {Double.parseDouble(split[0]), Double.parseDouble(split[2]), 0},

@@ -28,7 +28,7 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
     private final Map<Cargo, Pose2d> STARTING_POSITIONS =
         Map.of(
             Cargo.A, new Pose2d(7.64, 1.986, new Rotation2d(4.712)),
-            Cargo.B, new Pose2d(6.607, 2.795, new Rotation2d(3.57)),
+            Cargo.B, new Pose2d(6.84, 2.89, new Rotation2d(3.57)),
             Cargo.D, new Pose2d(6.6131, 5.063, new Rotation2d(2.38))
         );
 

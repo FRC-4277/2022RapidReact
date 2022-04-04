@@ -24,11 +24,11 @@ public class ThreeBallAuto3 extends SequentialCommandGroup {
     private static final List<Cargo> cargos = List.of(Cargo.A, Cargo.B);
     private static final double SLOW_DOWN_RADIUS = Units.feetToMeters(2.0); // Radius around balls to slow down
     private static final double SLOW_DOWN_VELOCITY = 1.0;
-    private static final double MAX_VELOCITY = 2.0;
-    private static final double MAX_ACCEL = 0.75;
+    private static final double MAX_VELOCITY = 2.75;
+    private static final double MAX_ACCEL = 1.0;
     private static final double LAST_BALL_DISTANCE_THRESHOLD = Units.feetToMeters(1.5);
 
-    // https://www.desmos.com/calculator/akzhznta0w
+    // https://www.desmos.com/calculator/xbejyankr7
 
     public ThreeBallAuto3(DriveTrain driveTrain, CargoManipulator cargoManipulator, Arm arm) {
         var reverseConfig = TrajectoryUtil.createConfig(MAX_VELOCITY, MAX_ACCEL, true);

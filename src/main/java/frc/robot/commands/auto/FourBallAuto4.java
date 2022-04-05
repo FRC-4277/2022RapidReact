@@ -8,7 +8,10 @@ import edu.wpi.first.math.trajectory.TrajectoryConfig;
 import edu.wpi.first.math.trajectory.constraint.EllipticalRegionConstraint;
 import edu.wpi.first.math.trajectory.constraint.MaxVelocityConstraint;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
+import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.*;
 import frc.robot.commands.trajectory.LazyRamseteCommand;
@@ -36,7 +39,7 @@ public class FourBallAuto4 extends SequentialCommandGroup {
     private static final Pose2d SHOOTING_POSE = new Pose2d(7.82, 2.67, new Rotation2d(1.1906147));
     // Intermediate pose 2
     private static final Pose2d INTERMEDIATE_TWO_POSE = new Pose2d(7.61, 1.9, new Rotation2d(Math.PI/2));
-    private static final Pose2d INTERMEDIATE_THREE_POSE = new Pose2d(7.6, 1.38, new Rotation2d(Math.PI/2));
+    private static final Pose2d INTERMEDIATE_THREE_POSE = new Pose2d(7.6, 1.7, new Rotation2d(Math.PI/2));
 
     // https://www.desmos.com/calculator/sjpin0nfmk
 
@@ -55,9 +58,16 @@ public class FourBallAuto4 extends SequentialCommandGroup {
 
         Trajectory pickupTrajectory = TrajectoryUtil.generateTrajectory(SECOND_TRAJECTORY, forwardWithBallsConfig);
 
+        Timer timer = new Timer();
+
         addCommands(
             // Reset odometry
             new DriveResetOdometryCommand(driveTrain, firstTrajectory.getInitialPose()),
+            // Timer start,
+            new InstantCommand(() -> {
+                timer.reset();
+                timer.start();
+            }),
             // Move arm all the way down
             new ParallelDeadlineGroup(
                 new ParallelDeadlineGroup(
@@ -126,6 +136,8 @@ public class FourBallAuto4 extends SequentialCommandGroup {
                 new CargoIntakeCommand(cargoManipulator),
                 new ArmHoldPositionCommand(arm, Arm.ArmPosition.UP)
             ),
+            // Shoot & print time at shoot,
+            new InstantCommand(() -> System.out.println("Shooting at " + timer.get())),
             new CargoShootCommand(cargoManipulator)
         );
     }

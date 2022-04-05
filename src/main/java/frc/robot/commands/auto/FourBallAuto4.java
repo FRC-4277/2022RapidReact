@@ -41,7 +41,7 @@ public class FourBallAuto4 extends SequentialCommandGroup {
     private static final Pose2d INTERMEDIATE_TWO_POSE = new Pose2d(7.61, 1.9, new Rotation2d(Math.PI/2));
     private static final Pose2d INTERMEDIATE_THREE_POSE = new Pose2d(7.6, 1.7, new Rotation2d(Math.PI/2));
 
-    // https://www.desmos.com/calculator/sjpin0nfmk
+    // https://www.desmos.com/calculator/iouvkxkemq
 
     public FourBallAuto4(DriveTrain driveTrain, CargoManipulator cargoManipulator, Arm arm, Vision vision) {
         var forwardConfig = TrajectoryUtil.createConfig(MAX_VELOCITY, MAX_ACCEL);

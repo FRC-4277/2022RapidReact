@@ -33,16 +33,19 @@ public class Arm extends SubsystemBase {
   private final CustomSimField simField;
 
   // Shuffleboard
+  private final ShuffleboardTab mainTab;
   private final ShuffleboardTab tab = Shuffleboard.getTab("Arm");
   private NetworkTableEntry armPositionEntry, hasBeenZeroedEntry, limitSwitchSafetySetting;
+  private NetworkTableEntry manualOverrideEntry;
 
   // State Variables
   private ArmDirection pidDirection = null; // Direction that PID is currently configured for
   private boolean hasBeenZeroed = false; // Whether the limit switch has been hit yet
   private boolean isLimitSwitchResetEnabled;
 
-  public Arm(CustomSimField simField) {
+  public Arm(CustomSimField simField, ShuffleboardTab mainTab) {
     this.simField = simField;
+    this.mainTab = mainTab;
     // Reset motor config, configure inversion, and set to brake mode
     motor.configFactoryDefault();
     motor.setInverted(TalonFXInvertType.CounterClockwise);
@@ -79,9 +82,19 @@ public class Arm extends SubsystemBase {
             .withPosition(0, 1)
             .withSize(2, 1)
             .getEntry();
+
     // Default to enabling limit switch in case setting changes; periodic will override with correct value
     limitSwitchSafetySetting.addListener(notification -> setLimitSwitchEnabled(true),
             EntryListenerFlags.kUpdate | EntryListenerFlags.kLocal);
+
+    // Manual override
+    manualOverrideEntry = mainTab.add("Arm Manual Override", false)
+            .withWidget(BuiltInWidgets.kToggleSwitch)
+            .withPosition(5, 0)
+            .withSize(2, 1).getEntry();
+    manualOverrideEntry.addListener(notification -> setManualOverride(notification.value.getBoolean()),
+            EntryListenerFlags.kUpdate);
+
   }
 
   @Override
@@ -231,6 +244,10 @@ public class Arm extends SubsystemBase {
 
   public TrapezoidProfile.State getTrapezoidState() {
     return new TrapezoidProfile.State(getPositionRad(), 0);
+  }
+
+  public void setManualOverride(boolean override) {
+    motor.configForwardSoftLimitEnable(!override);
   }
 
   public enum ArmDirection {

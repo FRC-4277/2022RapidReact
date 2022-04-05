@@ -57,9 +57,9 @@ public class RobotContainer {
 
     // Subsystems
     private final DriveTrain driveTrain = new DriveTrain(simField, autoTab);
-    private final Arm arm = new Arm(simField);
+    private final Arm arm = new Arm(simField, mainTab);
     private final CargoManipulator cargoManipulator = new CargoManipulator(simField);
-    private final Climber climber = new Climber();
+    private final Climber climber = new Climber(mainTab);
     private final Vision vision = new Vision(mainTab);
 
     // Controllers

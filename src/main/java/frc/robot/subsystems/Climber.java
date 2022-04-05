@@ -10,9 +10,11 @@ import com.ctre.phoenix.motorcontrol.TalonFXFeedbackDevice;
 import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.math.util.Units;
+import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -42,10 +44,14 @@ public class Climber extends SubsystemBase {
 
   // Shuffleboard
   private final ShuffleboardTab tab = Shuffleboard.getTab("Climber");
-  private NetworkTableEntry leftPositionEntry, rightPositionEntry;
+  private final ShuffleboardTab mainTab;
+  private final NetworkTableEntry leftPositionEntry, rightPositionEntry;
+  private final NetworkTableEntry manualOverrideEntry;
 
-  /** Creates a new Climber. */
-  public Climber() {
+  /** Creates a new Climber.
+   * @param mainTab*/
+  public Climber(ShuffleboardTab mainTab) {
+    this.mainTab = mainTab;
     motors.forEach(this::configureMotor);
     leftMotor.setInverted(LEFT_MOTOR_INVERSION);
     rightMotor.setInverted(RIGHT_MOTOR_INVERSION);
@@ -69,6 +75,20 @@ public class Climber extends SubsystemBase {
             .withPosition(0, 1)
             .withSize(2, 1)
             .getEntry();
+
+    manualOverrideEntry = mainTab.add("Climber Manual Override", false)
+            .withWidget(BuiltInWidgets.kToggleSwitch)
+            .withPosition(5, 1)
+            .withSize(2, 1).getEntry();
+    manualOverrideEntry.addListener(notification -> setManualOverride(notification.value.getBoolean()),
+            EntryListenerFlags.kUpdate);
+  }
+
+  private void setManualOverride(boolean override) {
+    motors.forEach(motor -> {
+      motor.configForwardSoftLimitEnable(!override);
+      motor.configReverseSoftLimitEnable(!override);
+    });
   }
 
   public void configureMotor(TalonFX motor) {

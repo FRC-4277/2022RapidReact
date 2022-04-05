@@ -16,6 +16,7 @@ import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Arm.ArmPosition;
 import frc.robot.subsystems.CargoManipulator;
 import frc.robot.subsystems.DriveTrain;
+import frc.robot.subsystems.Vision;
 
 import java.util.Map;
 
@@ -60,7 +61,7 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
             Cargo.D, new Pose2d(6.99, 4.59, new Rotation2d(5.8708))
         );
 
-    public TwoBallAuto2(CargoManipulator cargoManipulator, DriveTrain driveTrain, Arm arm, Cargo cargo) {
+    public TwoBallAuto2(CargoManipulator cargoManipulator, DriveTrain driveTrain, Arm arm, Cargo cargo, Vision vision) {
         assert cargo.isCloseBall();
 
         Pose2d startingPosition = STARTING_POSITIONS.get(cargo);
@@ -78,6 +79,8 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
         addCommands(
             // Reset odometry
             new DriveResetOdometryCommand(driveTrain, startingPosition),
+            // Initialize vision
+            new VisionConfigureForAutoCommand(vision),
             // Move arm all the way down
             new ArmFirstDownCommand(arm).withTimeout(5.0),
             // Drive to pickup position with intake moving and arm is held down
@@ -87,7 +90,7 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
                 new ArmHoldPositionCommand(arm, ArmPosition.DOWN)
             ),
             // Pickup ball & drive a little further
-            new AutoBallPickupCommand(driveTrain, cargoManipulator, arm, PICKUP_DISTANCE.get(cargo)),
+            new AutoBallPickupCommand(driveTrain, cargoManipulator, arm, vision, PICKUP_DISTANCE.get(cargo)),
             // Drive back (three point turn), keep running intake & put arm up all at same time
             new ParallelDeadlineGroup(
                 new SequentialCommandGroup(

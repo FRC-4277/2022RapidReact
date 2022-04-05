@@ -6,6 +6,7 @@ package frc.robot;
 
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.util.sendable.SendableRegistry;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.livewindow.LiveWindow;
@@ -43,7 +44,7 @@ public class RobotContainer {
     private static final String MAIN_TAB_NAME = "Main";
     private final ShuffleboardTab mainTab = Shuffleboard.getTab(MAIN_TAB_NAME);
     private final ShuffleboardTab debugTab = Shuffleboard.getTab("Debug");
-    private final NetworkTableEntry autoTimes;
+    private final NetworkTableEntry autoTimes, remainingTime, climbWarning;
     {
         autoTimes = debugTab.add("Auto Path Times", "")
                 .withWidget(BuiltInWidgets.kTextView)
@@ -101,6 +102,15 @@ public class RobotContainer {
         driveTrain.setDefaultCommand(driveJoystickCommand);
         // Shuffleboard
         setupAutonomousTab();
+        remainingTime = mainTab.add("Remaining Teleop Time", -1)
+                .withWidget(BuiltInWidgets.kTextView)
+                .withPosition(5, 2)
+                .withSize(2, 1)
+                .getEntry();
+        climbWarning = mainTab.add("Climb Warning", false)
+                .withWidget(BuiltInWidgets.kBooleanBox)
+                .withPosition(7, 2)
+                .getEntry();
         // Disable LiveWindow as we don't need it
         LiveWindow.disableAllTelemetry();
     }
@@ -173,11 +183,11 @@ public class RobotContainer {
         autoChooser.addOption("Arm Down", new ArmFirstDownCommand(arm));
         autoChooser.addOption("Move Backwards", new MoveOnlyAuto0(driveTrain, arm));
         autoChooser.addOption("Shoot & Move Backwards", new ShootMoveAuto1(driveTrain, cargoManipulator, arm));
-        autoChooser.addOption("Two Ball (A)", new TwoBallAuto2(cargoManipulator, driveTrain, arm, Cargo.A));
-        autoChooser.addOption("Two Ball (B)", new TwoBallAuto2(cargoManipulator, driveTrain, arm, Cargo.B));
-        autoChooser.addOption("Two Ball (D)", new TwoBallAuto2(cargoManipulator, driveTrain, arm, Cargo.D));
+        autoChooser.addOption("Two Ball (A)", new TwoBallAuto2(cargoManipulator, driveTrain, arm, Cargo.A, vision));
+        autoChooser.addOption("Two Ball (B)", new TwoBallAuto2(cargoManipulator, driveTrain, arm, Cargo.B, vision));
+        autoChooser.addOption("Two Ball (D)", new TwoBallAuto2(cargoManipulator, driveTrain, arm, Cargo.D, vision));
         autoChooser.addOption("Three Ball (A)", new ThreeBallAuto3(driveTrain, cargoManipulator, arm));
-        autoChooser.addOption("Four Ball (A)", new FourBallAuto4(driveTrain, cargoManipulator, arm));
+        autoChooser.addOption("Four Ball (A)", new FourBallAuto4(driveTrain, cargoManipulator, arm, vision));
 
         autoTab.add(autoChooser)
                 .withPosition(0, 0)
@@ -197,6 +207,14 @@ public class RobotContainer {
         Shuffleboard.selectTab(MAIN_TAB_NAME);
         // Turn off odometry in teleop
         driveTrain.setOdometryEnabled(false);
+        // Set vision to driver mode
+        vision.setDriverMode(true);
+    }
+
+    public void teleopPeriodic() {
+        double timeRemaining = DriverStation.getMatchTime();
+        remainingTime.setNumber(timeRemaining);
+        climbWarning.setBoolean(timeRemaining <= 35.0);
     }
 
     public CustomSimField getSimField() {

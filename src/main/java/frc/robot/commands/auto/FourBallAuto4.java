@@ -11,7 +11,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelDeadlineGroup;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.commands.*;
 import frc.robot.commands.trajectory.LazyRamseteCommand;
@@ -19,6 +18,7 @@ import frc.robot.commands.trajectory.TrajectoryUtil;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.CargoManipulator;
 import frc.robot.subsystems.DriveTrain;
+import frc.robot.subsystems.Vision;
 
 import java.util.List;
 
@@ -43,7 +43,7 @@ public class FourBallAuto4 extends SequentialCommandGroup {
 
     // https://www.desmos.com/calculator/sjpin0nfmk
 
-    public FourBallAuto4(DriveTrain driveTrain, CargoManipulator cargoManipulator, Arm arm) {
+    public FourBallAuto4(DriveTrain driveTrain, CargoManipulator cargoManipulator, Arm arm, Vision vision) {
         var forwardConfig = TrajectoryUtil.createConfig(MAX_VELOCITY, MAX_ACCEL);
         var forwardWithBallsConfig = TrajectoryUtil.createConfig(MAX_VELOCITY, MAX_ACCEL);
         // Add slow down near balls
@@ -63,6 +63,8 @@ public class FourBallAuto4 extends SequentialCommandGroup {
         addCommands(
             // Reset odometry
             new DriveResetOdometryCommand(driveTrain, firstTrajectory.getInitialPose()),
+            // Initialize vision
+            new VisionConfigureForAutoCommand(vision),
             // Timer start,
             new InstantCommand(() -> {
                 timer.reset();
@@ -76,7 +78,7 @@ public class FourBallAuto4 extends SequentialCommandGroup {
                 ),
                 new ArmFirstDownCommand(arm)
             ),
-            new AutoBallPickupCommand(driveTrain, cargoManipulator, arm, FIRST_PICKUP_DISTANCE),
+            new AutoBallPickupCommand(driveTrain, cargoManipulator, arm, vision, FIRST_PICKUP_DISTANCE),
             // Drive back (three point turn)
             new ParallelDeadlineGroup(
                 new SequentialCommandGroup(

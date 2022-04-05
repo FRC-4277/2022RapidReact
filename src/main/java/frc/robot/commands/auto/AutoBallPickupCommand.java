@@ -7,11 +7,13 @@ package frc.robot.commands.auto;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandBase;
-import frc.robot.commands.trajectory.PoseUtil;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Arm.ArmPosition;
 import frc.robot.subsystems.CargoManipulator;
 import frc.robot.subsystems.DriveTrain;
+import frc.robot.subsystems.Vision;
+
+import java.util.Optional;
 
 public class AutoBallPickupCommand extends CommandBase {
   static final double DRIVE_SPEED = 0.2;
@@ -21,6 +23,7 @@ public class AutoBallPickupCommand extends CommandBase {
   private final DriveTrain driveTrain;
   private final CargoManipulator cargoManipulator;
   private final Arm arm;
+  private final Vision vision;
   private final double maxDistance;
   private final double maxTime;
 
@@ -31,24 +34,26 @@ public class AutoBallPickupCommand extends CommandBase {
    * @param driveTrain
    * @param cargoManipulator
    * @param arm
+   * @param vision
    * @param distance In meters
-   * @param maxTime   */
-  public AutoBallPickupCommand(DriveTrain driveTrain, CargoManipulator cargoManipulator, Arm arm, double distance, double maxTime) {
+   * @param maxTime      */
+  public AutoBallPickupCommand(DriveTrain driveTrain, CargoManipulator cargoManipulator, Arm arm, Vision vision, double distance, double maxTime) {
     this.driveTrain = driveTrain;
     this.cargoManipulator = cargoManipulator;
     this.arm = arm;
+    this.vision = vision;
     this.maxDistance = distance;
     this.maxTime = maxTime;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(driveTrain, cargoManipulator);
   }
 
-  public AutoBallPickupCommand(DriveTrain driveTrain, CargoManipulator cargoManipulator, Arm arm) {
-    this(driveTrain, cargoManipulator, arm, DEFAULT_MAX_DISTANCE, DEFAULT_MAX_TIME);
+  public AutoBallPickupCommand(DriveTrain driveTrain, CargoManipulator cargoManipulator, Arm arm, Vision vision) {
+    this(driveTrain, cargoManipulator, arm, vision, DEFAULT_MAX_DISTANCE, DEFAULT_MAX_TIME);
   }
 
-  public AutoBallPickupCommand(DriveTrain driveTrain, CargoManipulator cargoManipulator, Arm arm, double distance) {
-    this(driveTrain, cargoManipulator, arm, distance, DEFAULT_MAX_TIME);
+  public AutoBallPickupCommand(DriveTrain driveTrain, CargoManipulator cargoManipulator, Arm arm, Vision vision, double distance) {
+    this(driveTrain, cargoManipulator, arm, vision, distance, DEFAULT_MAX_TIME);
   }
 
   // Called when the command is initially scheduled.
@@ -66,6 +71,15 @@ public class AutoBallPickupCommand extends CommandBase {
     // drive
     double leftSpeed = DRIVE_SPEED;
     double rightSpeed = DRIVE_SPEED; // todo : ADD PHOTON VISION adjustment
+    Optional<Double> ballDegrees = vision.getBallDegrees();
+    if (ballDegrees.isPresent()) {
+      double degrees = ballDegrees.get();
+      if (degrees < 10) {
+        double adjustment = 0.015 * degrees;
+        leftSpeed += adjustment;
+        rightSpeed -= adjustment;
+      }
+    }
     driveTrain.rawDrive(leftSpeed, rightSpeed);
     // hold arm down && intake
     arm.holdPosition(ArmPosition.DOWN);

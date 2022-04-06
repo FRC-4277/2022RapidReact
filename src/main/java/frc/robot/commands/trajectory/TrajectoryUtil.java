@@ -61,12 +61,14 @@ public class TrajectoryUtil {
 
     public static TrajectoryConfig createConfig(double maxVel, double maxAccel, boolean reversed) {
         TrajectoryConfig config = createConfig(maxVel, maxAccel);
+        config.setKinematics(Constants.DriveTrain.DRIVE_KINEMATICS);
         config.setReversed(reversed);
         return config;
     }
 
     public static TrajectoryConfig createConfig(double maxVel, double maxAccel, double maxCentripetalAccel) {
         var config = new TrajectoryConfig(maxVel, maxAccel);
+        config.setKinematics(Constants.DriveTrain.DRIVE_KINEMATICS);
         config.addConstraint(new CentripetalAccelerationConstraint(maxCentripetalAccel));
         return config;
     }
@@ -74,6 +76,7 @@ public class TrajectoryUtil {
     public static TrajectoryConfig createConfig(double maxVel, double maxAccel,
                                                 boolean reversed, double maxCentripetalAccel) {
         var config = new TrajectoryConfig(maxVel, maxAccel);
+        config.setKinematics(Constants.DriveTrain.DRIVE_KINEMATICS);
         config.setReversed(reversed);
         config.addConstraint(new CentripetalAccelerationConstraint(maxCentripetalAccel));
         return config;
@@ -81,12 +84,15 @@ public class TrajectoryUtil {
 
     public static Trajectory generateTransformTrajectory(Pose2d start, Transform2d transform2d, TrajectoryConfig config) {
         Pose2d end = start.plus(transform2d);
-        System.out.println("END: " + end);
         return TrajectoryGenerator.generateTrajectory(start, List.of(), end, config);
     }
 
     public static Trajectory generateTrajectory(Pose2d start, Pose2d end, TrajectoryConfig config) {
         return TrajectoryGenerator.generateTrajectory(start, List.of(), end, config);
+    }
+
+    public static Trajectory generateTrajectory(Pose2d start, List<Translation2d> waypoints, Pose2d end, TrajectoryConfig config) {
+        return TrajectoryGenerator.generateTrajectory(start, waypoints, end, config);
     }
 
     public static Trajectory generateTranslateTrajectory(Pose2d start, Translation2d translation2d, TrajectoryConfig config) {
@@ -96,7 +102,6 @@ public class TrajectoryUtil {
     public static Trajectory generateStraightTrajectory(Pose2d start, TrajectoryConfig config, double distanceM) {
         if (distanceM < 0) {
             config.setReversed(true);
-            System.out.println("REVERSED");
         }
         return generateTranslateTrajectory(start, new Translation2d(distanceM, 0), config);
     }

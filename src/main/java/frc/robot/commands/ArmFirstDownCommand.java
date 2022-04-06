@@ -5,8 +5,8 @@
 package frc.robot.commands;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Arm.ArmPosition;
@@ -35,15 +35,11 @@ public class ArmFirstDownCommand extends CommandBase {
     TrapezoidProfile.State start = arm.getTrapezoidState();
     // Have the end position be a few degrees above 0 just in case the arm isn't in perfect start position
     TrapezoidProfile.State end = new TrapezoidProfile.State(Math.toRadians(Arm.SLOW_ZONE_DEGREES / 2), 0);
-    trapezoidProfile = new TrapezoidProfile(TRAPEZOID_CONSTRAINTS, end, start);
+    trapezoidProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(6, 3), end, start);
 
     timer = new Timer();
     timer.reset();
     timer.start();
-    SmartDashboard.putNumber("START: ", start.position);
-    SmartDashboard.putNumber("START deg ", Math.toRadians(start.position));
-    SmartDashboard.putNumber("END: ", end.position);
-    SmartDashboard.putNumber("END deg ", Math.toRadians(end.position));
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -53,18 +49,15 @@ public class ArmFirstDownCommand extends CommandBase {
       // Use trapezoid profile
       TrapezoidProfile.State state = trapezoidProfile.calculate(timer.get());
       arm.moveToState(ArmPosition.DOWN, state);
-      System.out.println("STATE: " + state.position);
     } else {
       // Trapezoid profile done, now just hold at bottom
       arm.holdPosition(ArmPosition.DOWN);
-      System.out.println("HOLDING DOWN");
     }
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    System.out.println("END ARM");
     arm.stopMoving();
   }
 
@@ -72,6 +65,6 @@ public class ArmFirstDownCommand extends CommandBase {
   @Override
   public boolean isFinished() {
     // No need to stop, it will stop itself with limit switch
-    return false;
+    return arm.isAtPosition(ArmPosition.DOWN) || (RobotBase.isSimulation() && timer.hasElapsed(trapezoidProfile.totalTime()));
   }
 }

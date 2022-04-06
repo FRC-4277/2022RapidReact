@@ -85,3 +85,18 @@ jar {
 deployArtifact.jarTask = jar
 wpi.java.configureExecutableTasks(jar)
 wpi.java.configureTestTasks(test)
+
+// Copy path files to robot
+task copyPathFiles(type: Copy) {
+    from 'PathWeaver'
+    into 'src/main/deploy/waypoints'
+    include '**/*.path'
+    eachFile { details ->
+        details.setRelativePath new RelativePath(true, details.name)
+    }
+    includeEmptyDirs = false
+}
+
+processResources {
+    dependsOn copyPathFiles
+}

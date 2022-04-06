@@ -4,6 +4,7 @@
 
 package frc.robot.commands;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.CommandBase;
@@ -40,9 +41,12 @@ public class DriveJoystickCommand extends CommandBase {
 
     double speed = -joystick.getY();
     // Limit accel if controller is > 20% either way
+    double limitedSpeed = speedLimiter.calculate(speed);
     if (Math.abs(speed) > 0.20) {
-      speed = speedLimiter.calculate(speed);
+      speed = limitedSpeed;
     }
+
+    speed = MathUtil.applyDeadband(speed, 0.03);
     
     driveTrain.joystickDrive(speed, rotation, turnInPlace);
   }

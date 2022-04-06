@@ -10,7 +10,7 @@ import java.nio.file.Path;
 
 public class WaypointReader {
     private static final double PATHWEAVER_Y_OFFSET =
-            4.572; // See https://www.desmos.com/calculator/0lqfdhxrmj
+            3.043 + 5.19; // Empirically determined
 
     /**
      * Get control vector list from path file

@@ -4,12 +4,76 @@
       "/FMSInfo": "FMSInfo",
       "/LiveWindow/Arm": "Subsystem",
       "/LiveWindow/BallManipulator": "Subsystem",
+      "/LiveWindow/CargoManipulator": "Subsystem",
       "/LiveWindow/Climber": "Subsystem",
       "/LiveWindow/DriveTrain": "Subsystem",
       "/LiveWindow/Ungrouped/DifferentialDrive[1]": "DifferentialDrive",
       "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
       "/LiveWindow/Ungrouped/navX-Sensor[4]": "Gyro",
-      "/Shuffleboard/Autonomous/Autonomous Command": "String Chooser"
+      "/LiveWindow/Vision": "Subsystem",
+      "/Shuffleboard/Autonomous/Autonomous Command": "String Chooser",
+      "/Shuffleboard/Autonomous/Field": "Field2d"
+    },
+    "windows": {
+      "/Shuffleboard/Autonomous/Field": {
+        "Robot": {
+          "arrows": false,
+          "color": [
+            0.0,
+            0.0,
+            0.0,
+            255.0
+          ],
+          "length": 0.0,
+          "selectable": false,
+          "weight": 0.0,
+          "width": 0.0
+        },
+        "Robot Arm Down": {
+          "image": ".\\simulation\\robot_arm_down.png",
+          "length": 1.1278870105743408,
+          "width": 0.6984999775886536
+        },
+        "Robot Arm Up": {
+          "arrows": false,
+          "image": ".\\simulation\\robot_arm_up.png",
+          "length": 1.1278870105743408,
+          "width": 0.6984999775886536
+        },
+        "Robot Intaking": {
+          "image": ".\\simulation\\robot_intaking.png",
+          "length": 1.1278870105743408,
+          "width": 0.6984999775886536
+        },
+        "Robot Shooting": {
+          "arrows": false,
+          "image": ".\\simulation\\robot_shooting.png",
+          "length": 1.1278870105743408,
+          "width": 0.6984999775886536
+        },
+        "height": 8.229599952697754,
+        "image": ".\\simulation\\field.png",
+        "trajectory": {
+          "arrows": false,
+          "color": [
+            0.1746741384267807,
+            0.936274528503418,
+            0.1009708046913147,
+            255.0
+          ],
+          "style": "Track",
+          "weight": 2.0,
+          "width": 0.6984999775886536
+        },
+        "width": 16.459199905395508,
+        "window": {
+          "name": "Field",
+          "visible": true
+        }
+      }
     }
+  },
+  "NetworkTables View": {
+    "visible": false
   }
 }

@@ -6,25 +6,29 @@ package frc.robot;
 
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.util.sendable.SendableRegistry;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.livewindow.LiveWindow;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
+import edu.wpi.first.wpilibj2.command.ProxyScheduleCommand;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.commands.*;
-import frc.robot.commands.auto.MoveOnlyAuto0;
-import frc.robot.commands.auto.ShootMoveAuto1;
+import frc.robot.commands.auto.*;
 import frc.robot.subsystems.Arm;
 import frc.robot.subsystems.Arm.ArmPosition;
-import frc.robot.subsystems.BallManipulator;
+import frc.robot.subsystems.CargoManipulator;
 import frc.robot.subsystems.Climber;
 import frc.robot.subsystems.Climber.ClimberDirection;
 import frc.robot.subsystems.DriveTrain;
+import frc.robot.subsystems.Vision;
 import frc.robot.subsystems.Arm.ArmDirection;
 import frc.robot.util.XboxTrigger;
 
@@ -40,12 +44,24 @@ public class RobotContainer {
     private static final String MAIN_TAB_NAME = "Main";
     private final ShuffleboardTab mainTab = Shuffleboard.getTab(MAIN_TAB_NAME);
     private final ShuffleboardTab debugTab = Shuffleboard.getTab("Debug");
-    private NetworkTableEntry autoTimes;
+    private final NetworkTableEntry autoTimes, remainingTime, climbWarning;
+    {
+        autoTimes = debugTab.add("Auto Path Times", "")
+                .withWidget(BuiltInWidgets.kTextView)
+                .withPosition(0, 0)
+                .withSize(5, 2)
+                .getEntry();
+    }
+
+    // Simulator
+    private final CustomSimField simField = new CustomSimField();
+
     // Subsystems
-    private final DriveTrain driveTrain = new DriveTrain(autoTab);
-    private final Arm arm = new Arm();
-    private final BallManipulator ballManipulator = new BallManipulator();
-    private final Climber climber = new Climber();
+    private final DriveTrain driveTrain = new DriveTrain(simField, autoTab);
+    private final Arm arm = new Arm(simField, mainTab);
+    private final CargoManipulator cargoManipulator = new CargoManipulator(simField);
+    private final Climber climber = new Climber(mainTab);
+    private final Vision vision = new Vision(mainTab);
 
     // Controllers
     private final Joystick joystick = new Joystick(LOGITECH_JOYSTICK);
@@ -65,8 +81,8 @@ public class RobotContainer {
     private final ArmManualHoldCommand armManualHoldUpCommand = new ArmManualHoldCommand(arm, ArmDirection.UP);
     private final ArmManualHoldCommand armManualHoldDownCommand = new ArmManualHoldCommand(arm, ArmDirection.DOWN);
     /* Ball commands */
-    private final IntakeCommand intakeCommand = new IntakeCommand(ballManipulator);
-    private final ShootCommand shootCommand = new ShootCommand(ballManipulator);
+    private final CargoIntakeCommand cargoIntakeCommand = new CargoIntakeCommand(cargoManipulator);
+    private final CargoShootCommand cargoShootCommand = new CargoShootCommand(cargoManipulator);
     /* Climber commands */
     private final ClimberManualMoveCommand climberManualUpCommand =
             new ClimberManualMoveCommand(climber, ClimberDirection.UP);
@@ -86,11 +102,17 @@ public class RobotContainer {
         driveTrain.setDefaultCommand(driveJoystickCommand);
         // Shuffleboard
         setupAutonomousTab();
-        autoTimes = debugTab.add("Auto Path Times", "")
+        remainingTime = mainTab.add("Remaining Teleop Time", -1)
                 .withWidget(BuiltInWidgets.kTextView)
-                .withPosition(0, 0)
-                .withSize(5, 2)
+                .withPosition(5, 2)
+                .withSize(2, 1)
                 .getEntry();
+        climbWarning = mainTab.add("Climb Warning", false)
+                .withWidget(BuiltInWidgets.kBooleanBox)
+                .withPosition(7, 2)
+                .getEntry();
+        // Disable LiveWindow as we don't need it
+        LiveWindow.disableAllTelemetry();
     }
 
     public void addAutoTime(String path, double seconds) {
@@ -127,9 +149,9 @@ public class RobotContainer {
         rightPOV.whenPressed(armManualHoldUpCommand);
 
         JoystickButton rightBumper = new JoystickButton(xboxController, XboxController.Button.kRightBumper.value);
-        rightBumper.whenHeld(intakeCommand);
+        rightBumper.whenHeld(cargoIntakeCommand);
         Trigger rightTrigger = new XboxTrigger(xboxController, false);
-        rightTrigger.whileActiveOnce(shootCommand);
+        rightTrigger.whileActiveOnce(cargoShootCommand);
 
         JoystickButton startButton = new JoystickButton(xboxController, XboxController.Button.kStart.value);
         startButton.whenPressed(armAutoClimbPositionCommand);
@@ -141,6 +163,16 @@ public class RobotContainer {
         xButton.whenHeld(climberManualDownFastCommand);
         JoystickButton aButton = new JoystickButton(xboxController, XboxController.Button.kA.value);
         aButton.whenHeld(climberManualDownCommand);
+
+        JoystickButton backButton = new JoystickButton(xboxController, XboxController.Button.kBack.value);
+        backButton.whenHeld(new ParallelCommandGroup(
+            new ArmMoveToCommand(arm, ArmPosition.DOWN),
+            new CargoIntakeCommand(cargoManipulator)
+        ));
+        backButton.whenReleased(new ParallelCommandGroup(
+            new ArmMoveToCommand(arm, ArmPosition.UP),
+            new ProxyScheduleCommand(new CargoIntakeCommand(cargoManipulator))
+        ));
     }
 
     private void setupAutonomousTab() {
@@ -150,9 +182,20 @@ public class RobotContainer {
         autoChooser.setDefaultOption("Nothing", null);
         autoChooser.addOption("Arm Down", new ArmFirstDownCommand(arm));
         autoChooser.addOption("Move Backwards", new MoveOnlyAuto0(driveTrain, arm));
-        autoChooser.addOption("Shoot & Move Backwards", new ShootMoveAuto1(driveTrain, ballManipulator, arm));
+        autoChooser.addOption("Shoot & Move Backwards", new ShootMoveAuto1(driveTrain, cargoManipulator, arm));
+        autoChooser.addOption("Two Ball (A)", new TwoBallAuto2(cargoManipulator, driveTrain, arm, Cargo.A, vision));
+        autoChooser.addOption("Two Ball (B)", new TwoBallAuto2(cargoManipulator, driveTrain, arm, Cargo.B, vision));
+        autoChooser.addOption("Two Ball (D)", new TwoBallAuto2(cargoManipulator, driveTrain, arm, Cargo.D, vision));
+        autoChooser.addOption("Three Ball (A)", new ThreeBallAuto3(driveTrain, cargoManipulator, arm));
+        autoChooser.addOption("Four Ball (A)", new FourBallAuto4(driveTrain, cargoManipulator, arm, vision));
 
-        autoTab.add(autoChooser).withPosition(0, 0).withSize(2, 1);
+        autoTab.add(autoChooser)
+                .withPosition(0, 0)
+                .withSize(2, 1);
+        autoTab.add(simField.getField2d())
+                .withWidget(BuiltInWidgets.kField)
+                .withPosition(0, 1)
+                .withSize(7, 4);
     }
 
     public Command getAutonomousCommand() {
@@ -163,6 +206,18 @@ public class RobotContainer {
         // Switch to main Shuffleboard tab at start of teleop
         Shuffleboard.selectTab(MAIN_TAB_NAME);
         // Turn off odometry in teleop
-        //driveTrain.setOdometryEnabled(false);
+        driveTrain.setOdometryEnabled(false);
+        // Set vision to driver mode
+        vision.setDriverMode(true);
+    }
+
+    public void teleopPeriodic() {
+        double timeRemaining = DriverStation.getMatchTime();
+        remainingTime.setNumber(timeRemaining);
+        climbWarning.setBoolean(timeRemaining <= 35.0);
+    }
+
+    public CustomSimField getSimField() {
+        return simField;
     }
 }

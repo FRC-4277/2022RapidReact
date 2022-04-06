@@ -9,11 +9,14 @@ import com.ctre.phoenix.motorcontrol.can.TalonFX;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.CustomSimField;
+import frc.robot.CustomSimField.RobotState;
 
 import static frc.robot.Constants.Arm.*;
 
@@ -25,18 +28,24 @@ public class Arm extends SubsystemBase {
   public static final double LIMIT_SWITCH_ZONE_DEGREES = 15; // Degrees of zone to allow limit switch to zero
 
   private final TalonFX motor = new TalonFX(MOTOR);
+  private final TalonFXSimCollection motorSim = motor.getSimCollection();
+
+  private final CustomSimField simField;
 
   // Shuffleboard
+  private final ShuffleboardTab mainTab;
   private final ShuffleboardTab tab = Shuffleboard.getTab("Arm");
   private NetworkTableEntry armPositionEntry, hasBeenZeroedEntry, limitSwitchSafetySetting;
+  private NetworkTableEntry manualOverrideEntry;
 
   // State Variables
   private ArmDirection pidDirection = null; // Direction that PID is currently configured for
   private boolean hasBeenZeroed = false; // Whether the limit switch has been hit yet
   private boolean isLimitSwitchResetEnabled;
 
-  /** Creates a new Arm. */
-  public Arm() {
+  public Arm(CustomSimField simField, ShuffleboardTab mainTab) {
+    this.simField = simField;
+    this.mainTab = mainTab;
     // Reset motor config, configure inversion, and set to brake mode
     motor.configFactoryDefault();
     motor.setInverted(TalonFXInvertType.CounterClockwise);
@@ -73,9 +82,19 @@ public class Arm extends SubsystemBase {
             .withPosition(0, 1)
             .withSize(2, 1)
             .getEntry();
+
     // Default to enabling limit switch in case setting changes; periodic will override with correct value
     limitSwitchSafetySetting.addListener(notification -> setLimitSwitchEnabled(true),
             EntryListenerFlags.kUpdate | EntryListenerFlags.kLocal);
+
+    // Manual override
+    manualOverrideEntry = mainTab.add("Arm Manual Override", false)
+            .withWidget(BuiltInWidgets.kToggleSwitch)
+            .withPosition(5, 0)
+            .withSize(2, 1).getEntry();
+    manualOverrideEntry.addListener(notification -> setManualOverride(notification.value.getBoolean()),
+            EntryListenerFlags.kUpdate);
+
   }
 
   @Override
@@ -146,6 +165,22 @@ public class Arm extends SubsystemBase {
   }
 
   public void holdPosition(ArmPosition position) {
+    if (RobotBase.isSimulation()) {
+      // Update robot in field
+      switch(position) {
+        case DOWN:
+          simField.setRobotState(RobotState.ARM_DOWN);
+          break;
+        case CLIMB:
+        case UP:
+          simField.setRobotState(RobotState.ARM_UP);
+          break;
+      }
+
+      // Set arm encoder
+      motorSim.setIntegratedSensorRawPosition(degreesToSensorUnits(position.getDegrees()));
+    }
+
     // Safety
     if (position != ArmPosition.DOWN && !hasBeenZeroed) {
       return;
@@ -163,8 +198,6 @@ public class Arm extends SubsystemBase {
     // Configure PID direction depending on if the target position is above or below
     configurePID(getPositionRad() < targetAngleRad ? ArmDirection.UP : ArmDirection.DOWN);
     // Use TalonFX position PID
-    System.out.println("POSITION SETPOINT IN RAD: " + targetAngleRad);
-    System.out.println("CURRENT POSITION RAD: " + getPositionRad());
     motor.set(TalonFXControlMode.Position, radToSensorUnits(targetAngleRad));
   }
 
@@ -211,6 +244,10 @@ public class Arm extends SubsystemBase {
 
   public TrapezoidProfile.State getTrapezoidState() {
     return new TrapezoidProfile.State(getPositionRad(), 0);
+  }
+
+  public void setManualOverride(boolean override) {
+    motor.configForwardSoftLimitEnable(!override);
   }
 
   public enum ArmDirection {

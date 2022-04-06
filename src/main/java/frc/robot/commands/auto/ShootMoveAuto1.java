@@ -7,14 +7,15 @@ package frc.robot.commands.auto;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.trajectory.Trajectory;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.wpilibj2.command.PrintCommand;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import frc.robot.CustomSimField;
 import frc.robot.commands.ArmFirstDownCommand;
-import frc.robot.commands.ResetOdometryCommand;
-import frc.robot.commands.ShootCommand;
+import frc.robot.commands.DriveResetOdometryCommand;
+import frc.robot.commands.CargoShootCommand;
 import frc.robot.commands.trajectory.TrajectoryUtil;
 import frc.robot.subsystems.Arm;
-import frc.robot.subsystems.BallManipulator;
+import frc.robot.subsystems.CargoManipulator;
 import frc.robot.subsystems.DriveTrain;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
@@ -26,17 +27,16 @@ public class ShootMoveAuto1 extends SequentialCommandGroup {
   private static final double DISTANCE = Units.feetToMeters(6.5);
 
   /** Creates a new ShootMoveAuto1. */
-  public ShootMoveAuto1(DriveTrain driveTrain, BallManipulator ballManipulator, Arm arm) {
+  public ShootMoveAuto1(DriveTrain driveTrain, CargoManipulator cargoManipulator, Arm arm) {
     // Add your commands in the addCommands() call, e.g.
     // addCommands(new FooCommand(), new BarCommand());
-    var start = new Pose2d();
+    var start = !RobotBase.isSimulation() ? new Pose2d() : CustomSimField.FIELD_CENTER;
     var config = TrajectoryUtil.createConfig(VELOCITY, ACCEL);
     Trajectory trajectory = TrajectoryUtil.generateStraightTrajectory(start, config, -DISTANCE);
     addCommands(
-      new ResetOdometryCommand(driveTrain, start),
-      new ShootCommand(ballManipulator).withTimeout(2.0),
+      new DriveResetOdometryCommand(driveTrain, start),
+      new CargoShootCommand(cargoManipulator).withTimeout(2.0),
       TrajectoryUtil.createCommand(trajectory, driveTrain),
-      new PrintCommand("ARM"),
       new ArmFirstDownCommand(arm)
     );
   }

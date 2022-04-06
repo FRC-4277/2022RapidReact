@@ -24,7 +24,7 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
     private static final double MAX_VELOCITY = 2.0;
     private static final double MAX_ACCEL = 0.75;
 
-    // https://www.desmos.com/calculator/e8uv61m0gy
+    // https://www.desmos.com/calculator/e8uv61m0gyzg
 
     private final Map<Cargo, Pose2d> STARTING_POSITIONS =
         Map.of(

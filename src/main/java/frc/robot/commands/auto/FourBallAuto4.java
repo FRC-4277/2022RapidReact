@@ -41,13 +41,13 @@ public class FourBallAuto4 extends SequentialCommandGroup {
     private static final Pose2d INTERMEDIATE_TWO_POSE = new Pose2d(7.8, 1.4, new Rotation2d(Math.PI/2));
     private static final Pose2d INTERMEDIATE_THREE_POSE = new Pose2d(8.18, 1.4, new Rotation2d(2.9));
     // Shooting position 2 (a little more left)
-    private static final Pose2d SHOOTING_POSE_2 = new Pose2d(7.51, 2.8, new Rotation2d(1.1906));
+    private static final Pose2d SHOOTING_POSE_2 = new Pose2d(7.71, 2.77, new Rotation2d(1.3));
 
     // https://www.desmos.com/calculator/i7bwshyg4t
 
     public FourBallAuto4(DriveTrain driveTrain, CargoManipulator cargoManipulator, Arm arm, Vision vision) {
         //var forwardConfig = TrajectoryUtil.createConfig(MAX_VELOCITY, MAX_ACCEL);
-        var forwardWithBallsConfig = TrajectoryUtil.createConfig(3.0, 1.5);
+        var forwardWithBallsConfig = TrajectoryUtil.createConfig(3.0, 1.75);
         // Add slow down near balls
         List.of(Cargo.B, Cargo.TERMINAL).forEach(cargo ->
                 forwardWithBallsConfig.addConstraint(new EllipticalRegionConstraint(cargo.getPosition(),
@@ -136,7 +136,7 @@ public class FourBallAuto4 extends SequentialCommandGroup {
             // Drive back & shoot
             new ParallelDeadlineGroup(
                     new LazyRamseteCommand(driveTrain, () -> {
-                        TrajectoryConfig config1 = TrajectoryUtil.createConfig(4.0, 2.5);
+                        TrajectoryConfig config1 = TrajectoryUtil.createConfig(4.0, 2.75);
                         config1.setEndVelocity(1.0);
                         return TrajectoryUtil.generateTrajectory(driveTrain.getPose(), SHOOTING_POSE_2, config1);
                     }),

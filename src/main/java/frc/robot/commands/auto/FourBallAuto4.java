@@ -36,18 +36,18 @@ public class FourBallAuto4 extends SequentialCommandGroup {
     private static final double FIRST_PICKUP_DISTANCE = 1.3 - Units.inchesToMeters(36);
     // Pose to go to after shooting first 2
     private static final Pose2d INTERMEDIATE_POSE = new Pose2d(8.37,1.93, new Rotation2d(Math.PI));
-    private static final Pose2d SHOOTING_POSE = new Pose2d(7.82, 2.67, new Rotation2d(1.1906147));
+    private static final Pose2d SHOOTING_POSE = new Pose2d(7.77,2.78, new Rotation2d(1.1906147));
     // Intermediate pose 2
-    private static final Pose2d INTERMEDIATE_TWO_POSE = new Pose2d(7.61, 1.7, new Rotation2d(Math.PI/2));
-    private static final Pose2d INTERMEDIATE_THREE_POSE = new Pose2d(8.11, 1.77, new Rotation2d(2.9));
+    private static final Pose2d INTERMEDIATE_TWO_POSE = new Pose2d(7.61, 1.4, new Rotation2d(Math.PI/2));
+    private static final Pose2d INTERMEDIATE_THREE_POSE = new Pose2d(8.18, 1.4, new Rotation2d(2.9));
     // Shooting position 2 (a little more left)
-    private static final Pose2d SHOOTING_POSE_2 = new Pose2d(7.66, 2.82, new Rotation2d(1.1906));
+    private static final Pose2d SHOOTING_POSE_2 = new Pose2d(7.86, 2.62, new Rotation2d(1.1906));
 
     // https://www.desmos.com/calculator/i7bwshyg4t
 
     public FourBallAuto4(DriveTrain driveTrain, CargoManipulator cargoManipulator, Arm arm, Vision vision) {
         //var forwardConfig = TrajectoryUtil.createConfig(MAX_VELOCITY, MAX_ACCEL);
-        var forwardWithBallsConfig = TrajectoryUtil.createConfig(3.0, 1.5);
+        var forwardWithBallsConfig = TrajectoryUtil.createConfig(1.5, 1.5);
         // Add slow down near balls
         List.of(Cargo.B, Cargo.TERMINAL).forEach(cargo ->
                 forwardWithBallsConfig.addConstraint(new EllipticalRegionConstraint(cargo.getPosition(),
@@ -58,7 +58,7 @@ public class FourBallAuto4 extends SequentialCommandGroup {
         //var reverseConfig = TrajectoryUtil.createConfig(MAX_VELOCITY, MAX_ACCEL, true);
 
         var firstConfig = TrajectoryUtil.createConfig(2.5, 1.0);
-        firstConfig.setEndVelocity(DriveTrain.convertPercentToVelocity(AutoBallPickupCommand.DRIVE_SPEED)); // make first movement end velocity be same as intake movement speed
+        //firstConfig.setEndVelocity(DriveTrain.convertPercentToVelocity(AutoBallPickupCommand.DRIVE_SPEED)); // make first movement end velocity be same as intake movement speed
         Trajectory firstTrajectory = TrajectoryUtil.generateTrajectory(START_POSE, Cargo.A.getPickupPose(FIRST_PICKUP_TRANSLATION), firstConfig);
 
         Trajectory pickupTrajectory = TrajectoryUtil.generateTrajectory(SECOND_TRAJECTORY, forwardWithBallsConfig);
@@ -83,7 +83,7 @@ public class FourBallAuto4 extends SequentialCommandGroup {
                 ),
                 new ArmFirstDownCommand(arm)
             ),
-            new AutoBallPickupCommand(driveTrain, cargoManipulator, arm, vision, FIRST_PICKUP_DISTANCE),
+            new AutoBallPickupCommand(driveTrain, cargoManipulator, arm, vision, FIRST_PICKUP_DISTANCE, 5.0, 0.75),
             // Drive back (three point turn)
             new ParallelDeadlineGroup(
                 new SequentialCommandGroup(
@@ -109,7 +109,7 @@ public class FourBallAuto4 extends SequentialCommandGroup {
             new ParallelDeadlineGroup(
                 new SequentialCommandGroup(
                     new LazyRamseteCommand(driveTrain, () -> {
-                        var config1 = TrajectoryUtil.createConfig(4.0, 3.0, true);
+                        var config1 = TrajectoryUtil.createConfig(4.0, 2.5, true);
                         //config1.setEndVelocity(1.0);
                         return TrajectoryUtil.generateTrajectory(driveTrain.getPose(), INTERMEDIATE_TWO_POSE, config1);
                     }),
@@ -127,7 +127,7 @@ public class FourBallAuto4 extends SequentialCommandGroup {
                     TrajectoryConfig config1 = TrajectoryUtil.createConfig(4.0, 2.5, true);
                     //config1.setEndVelocity(1.5);
                     return TrajectoryUtil.generateTrajectory(driveTrain.getPose(),
-                            List.of(new Translation2d(5.32,1.9)),
+                            List.of(new Translation2d(5.32,1.7)),
                             INTERMEDIATE_THREE_POSE, config1);
                 }),
                 new CargoIntakeCommand(cargoManipulator),

@@ -19,6 +19,7 @@ public class AutoBallPickupCommand extends CommandBase {
   static final double DRIVE_SPEED = 0.2;
   private static final double DEFAULT_MAX_DISTANCE = 0.70; // meters
   private static final double DEFAULT_MAX_TIME = 3.5; // seconds
+  private static final double PICKUP_INTAKE_SPEED = 0.5;
 
   private final DriveTrain driveTrain;
   private final CargoManipulator cargoManipulator;
@@ -26,6 +27,7 @@ public class AutoBallPickupCommand extends CommandBase {
   private final Vision vision;
   private final double maxDistance;
   private final double maxTime;
+  private final double intakeSpeed;
 
   private Pose2d startPose;
   private Timer timer;
@@ -36,24 +38,26 @@ public class AutoBallPickupCommand extends CommandBase {
    * @param arm
    * @param vision
    * @param distance In meters
-   * @param maxTime      */
-  public AutoBallPickupCommand(DriveTrain driveTrain, CargoManipulator cargoManipulator, Arm arm, Vision vision, double distance, double maxTime) {
+   * @param maxTime
+   * @param intakeSpeed          */
+  public AutoBallPickupCommand(DriveTrain driveTrain, CargoManipulator cargoManipulator, Arm arm, Vision vision, double distance, double maxTime, double intakeSpeed) {
     this.driveTrain = driveTrain;
     this.cargoManipulator = cargoManipulator;
     this.arm = arm;
     this.vision = vision;
     this.maxDistance = distance;
     this.maxTime = maxTime;
+    this.intakeSpeed = intakeSpeed;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(driveTrain, cargoManipulator);
   }
 
   public AutoBallPickupCommand(DriveTrain driveTrain, CargoManipulator cargoManipulator, Arm arm, Vision vision) {
-    this(driveTrain, cargoManipulator, arm, vision, DEFAULT_MAX_DISTANCE, DEFAULT_MAX_TIME);
+    this(driveTrain, cargoManipulator, arm, vision, DEFAULT_MAX_DISTANCE, DEFAULT_MAX_TIME, PICKUP_INTAKE_SPEED);
   }
 
   public AutoBallPickupCommand(DriveTrain driveTrain, CargoManipulator cargoManipulator, Arm arm, Vision vision, double distance) {
-    this(driveTrain, cargoManipulator, arm, vision, distance, DEFAULT_MAX_TIME);
+    this(driveTrain, cargoManipulator, arm, vision, distance, DEFAULT_MAX_TIME, PICKUP_INTAKE_SPEED);
   }
 
   // Called when the command is initially scheduled.
@@ -83,7 +87,7 @@ public class AutoBallPickupCommand extends CommandBase {
     driveTrain.rawDrive(leftSpeed, rightSpeed);
     // hold arm down && intake
     arm.holdPosition(ArmPosition.DOWN);
-    cargoManipulator.intake();
+    cargoManipulator.intake(intakeSpeed);
   }
 
   // Called once the command ends or is interrupted.

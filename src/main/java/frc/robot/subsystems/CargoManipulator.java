@@ -35,6 +35,13 @@ public class CargoManipulator extends SubsystemBase {
     }
   }
 
+  public void intake(double speed) {
+    motor.set(ControlMode.PercentOutput, speed);
+    if (RobotBase.isSimulation()) {
+      simField.setRobotState(lastState = RobotState.INTAKING);
+    }
+  }
+
   public void shoot() {
     motor.set(ControlMode.PercentOutput, -SHOOT_SPEED);
     if (RobotBase.isSimulation()) {

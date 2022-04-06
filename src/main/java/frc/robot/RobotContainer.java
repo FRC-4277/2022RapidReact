@@ -170,7 +170,7 @@ public class RobotContainer {
             new CargoIntakeCommand(cargoManipulator)
         ));
         backButton.whenReleased(new ParallelCommandGroup(
-            armAutoUpCommand,
+            new ArmMoveToCommand(arm, ArmPosition.UP),
             new ProxyScheduleCommand(new CargoIntakeCommand(cargoManipulator))
         ));
     }

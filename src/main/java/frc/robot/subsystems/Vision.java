@@ -19,7 +19,7 @@ import java.util.Optional;
 public class Vision extends SubsystemBase {
   private static final String PHOTON_CAMERA_NAME = "Driver Camera";
   private final PhotonCamera photonCamera = new PhotonCamera(PHOTON_CAMERA_NAME);
-  private final HttpCamera httpCamera = new HttpCamera("Microsoft_LifeCam_HD-3000-output",
+  private final HttpCamera httpCamera = new HttpCamera("Driver Camera-output",
           "http://10.42.77.12:1182/stream.mjpg");
   private final ShuffleboardTab driverTab;
 

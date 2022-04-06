@@ -26,8 +26,8 @@ public class FourBallAuto4 extends SequentialCommandGroup {
     private static final String SECOND_TRAJECTORY = "4_A1"; // Pickup balls
     //private static final String THIRD_TRAJECTORY = "4_A2"; // Reverse to turn around
     //private static final String FOURTH_TRAJECTORY = "4_A3"; // Forward to shooting position
-    private static final double MAX_VELOCITY = 4.0;
-    private static final double MAX_ACCEL = 2.5;
+    private static final double MAX_VELOCITY = 2.0;
+    private static final double MAX_ACCEL = 0.5;
     private static final double SLOW_DOWN_RADIUS = Units.feetToMeters(2.0); // Radius around balls to slow down
     private static final double SLOW_DOWN_VELOCITY = 2.0;
 
@@ -84,14 +84,14 @@ public class FourBallAuto4 extends SequentialCommandGroup {
                 new SequentialCommandGroup(
                         // Drive backwards to BEFORE shoot position
                         new LazyRamseteCommand(driveTrain, () -> {
-                            var config1 = TrajectoryUtil.createConfig(MAX_VELOCITY, MAX_ACCEL, true);
-                            config1.setEndVelocity(0.5);
+                            var config1 = TrajectoryUtil.createConfig(3.0, 1.0, true);
+                            //config1.setEndVelocity(0.5);
                             return TrajectoryUtil.generateTrajectory(driveTrain.getPose(), INTERMEDIATE_POSE, config1);
                         }, false),
                         // Drive forwards to shoot position
                         new LazyRamseteCommand(driveTrain, () -> {
-                            var config1 = TrajectoryUtil.createConfig(MAX_VELOCITY, MAX_ACCEL);
-                            config1.setEndVelocity(1.5);
+                            var config1 = TrajectoryUtil.createConfig(3.0, 1.0);
+                            //config1.setEndVelocity(1.5);
                             return TrajectoryUtil.generateTrajectory(driveTrain.getPose(), SHOOTING_POSE, config1);
                         })
                 ),
@@ -103,8 +103,8 @@ public class FourBallAuto4 extends SequentialCommandGroup {
             // Drive back to intermediate 2 w/ arm down
             new ParallelDeadlineGroup(
                 new LazyRamseteCommand(driveTrain, () -> {
-                    var config1 = TrajectoryUtil.createConfig(MAX_VELOCITY, MAX_ACCEL, true);
-                    config1.setEndVelocity(1.0);
+                    var config1 = TrajectoryUtil.createConfig(3.0, 1.0, true);
+                    //config1.setEndVelocity(1.0);
                     return TrajectoryUtil.generateTrajectory(driveTrain.getPose(), INTERMEDIATE_TWO_POSE, config1);
                 }),
                 new CargoIntakeCommand(cargoManipulator),
@@ -119,10 +119,10 @@ public class FourBallAuto4 extends SequentialCommandGroup {
             // Drive back to intermediate 3
             new ParallelDeadlineGroup(
                 new LazyRamseteCommand(driveTrain, () -> {
-                    TrajectoryConfig config1 = TrajectoryUtil.createConfig(4.0, 3.0, true);
-                    config1.setEndVelocity(1.5);
+                    TrajectoryConfig config1 = TrajectoryUtil.createConfig(3.0, 1.0, true);
+                    //config1.setEndVelocity(1.5);
                     return TrajectoryUtil.generateTrajectory(driveTrain.getPose(),
-                            List.of(Cargo.B.getPosition()),
+                            List.of(Cargo.B.getPosition().plus(new Translation2d(0, -1))),
                             INTERMEDIATE_THREE_POSE, config1);
                 }),
                 new CargoIntakeCommand(cargoManipulator),
@@ -131,8 +131,8 @@ public class FourBallAuto4 extends SequentialCommandGroup {
             // Drive back & shoot
             new ParallelDeadlineGroup(
                     new LazyRamseteCommand(driveTrain, () -> {
-                        TrajectoryConfig config1 = TrajectoryUtil.createConfig(4.0, 3.0);
-                        config1.setEndVelocity(2.0);
+                        TrajectoryConfig config1 = TrajectoryUtil.createConfig(3.0, 1.0);
+                        config1.setEndVelocity(0.75);
                         return TrajectoryUtil.generateTrajectory(driveTrain.getPose(), SHOOTING_POSE, config1);
                     }),
                 new CargoIntakeCommand(cargoManipulator),

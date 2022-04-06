@@ -83,13 +83,13 @@ public class FourBallAuto4 extends SequentialCommandGroup {
                 new SequentialCommandGroup(
                         // Drive backwards to BEFORE shoot position
                         new LazyRamseteCommand(driveTrain, () -> {
-                            var config1 = TrajectoryUtil.createConfig(4.0, 3.0, true);
+                            var config1 = TrajectoryUtil.createConfig(4.0, 2.75, true);
                             //config1.setEndVelocity(0.5);
                             return TrajectoryUtil.generateTrajectory(driveTrain.getPose(), INTERMEDIATE_POSE, config1);
                         }, false),
                         // Drive forwards to shoot position
                         new LazyRamseteCommand(driveTrain, () -> {
-                            var config1 = TrajectoryUtil.createConfig(4.0, 3.0);
+                            var config1 = TrajectoryUtil.createConfig(4.0, 2.75);
                             //config1.setEndVelocity(1.5);
                             return TrajectoryUtil.generateTrajectory(driveTrain.getPose(), SHOOTING_POSE, config1);
                         })
@@ -108,7 +108,7 @@ public class FourBallAuto4 extends SequentialCommandGroup {
                 }),
                 new CargoIntakeCommand(cargoManipulator),
                 new SequentialCommandGroup(
-                    new WaitCommand(1.0),
+                    new WaitCommand(0.5),
                     new ArmMoveToCommand(arm, Arm.ArmPosition.DOWN)
                 )
             ),

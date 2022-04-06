@@ -38,22 +38,22 @@ public class FourBallAuto4 extends SequentialCommandGroup {
     private static final Pose2d INTERMEDIATE_POSE = new Pose2d(8.37,1.93, new Rotation2d(Math.PI));
     private static final Pose2d SHOOTING_POSE = new Pose2d(7.77,2.78, new Rotation2d(1.1906147));
     // Intermediate pose 2
-    private static final Pose2d INTERMEDIATE_TWO_POSE = new Pose2d(7.61, 1.4, new Rotation2d(Math.PI/2));
+    private static final Pose2d INTERMEDIATE_TWO_POSE = new Pose2d(7.8, 1.4, new Rotation2d(Math.PI/2));
     private static final Pose2d INTERMEDIATE_THREE_POSE = new Pose2d(8.18, 1.4, new Rotation2d(2.9));
     // Shooting position 2 (a little more left)
-    private static final Pose2d SHOOTING_POSE_2 = new Pose2d(7.86, 2.62, new Rotation2d(1.1906));
+    private static final Pose2d SHOOTING_POSE_2 = new Pose2d(7.51, 2.8, new Rotation2d(1.1906));
 
     // https://www.desmos.com/calculator/i7bwshyg4t
 
     public FourBallAuto4(DriveTrain driveTrain, CargoManipulator cargoManipulator, Arm arm, Vision vision) {
         //var forwardConfig = TrajectoryUtil.createConfig(MAX_VELOCITY, MAX_ACCEL);
-        var forwardWithBallsConfig = TrajectoryUtil.createConfig(1.5, 1.5);
+        var forwardWithBallsConfig = TrajectoryUtil.createConfig(3.0, 1.5);
         // Add slow down near balls
         List.of(Cargo.B, Cargo.TERMINAL).forEach(cargo ->
                 forwardWithBallsConfig.addConstraint(new EllipticalRegionConstraint(cargo.getPosition(),
                         SLOW_DOWN_RADIUS * 2, SLOW_DOWN_RADIUS * 2, new Rotation2d(),
                         new MaxVelocityConstraint(SLOW_DOWN_VELOCITY))));
-        forwardWithBallsConfig.setEndVelocity(1.75); // don't need to slow down when picking up last ball
+        forwardWithBallsConfig.setEndVelocity(2.0); // don't need to slow down when picking up last ball
 
         //var reverseConfig = TrajectoryUtil.createConfig(MAX_VELOCITY, MAX_ACCEL, true);
 
@@ -136,7 +136,7 @@ public class FourBallAuto4 extends SequentialCommandGroup {
             // Drive back & shoot
             new ParallelDeadlineGroup(
                     new LazyRamseteCommand(driveTrain, () -> {
-                        TrajectoryConfig config1 = TrajectoryUtil.createConfig(4.0, 1.5);
+                        TrajectoryConfig config1 = TrajectoryUtil.createConfig(4.0, 2.5);
                         config1.setEndVelocity(1.0);
                         return TrajectoryUtil.generateTrajectory(driveTrain.getPose(), SHOOTING_POSE_2, config1);
                     }),

@@ -87,7 +87,7 @@ public class Constants {
         public static final int GEARING = 36; // 36 from MAXPlanetary gearbox
         public static final double WINCH_DIAMETER_M = Units.inchesToMeters(0.5);
         // Position Offsets
-        public static final double LEFT_ADDITIONAL_OFFSET_IN = -0.75;
+        public static final double LEFT_ADDITIONAL_OFFSET_IN = -0.5;
         public static final double RIGHT_ADDITIONAL_OFFSET_IN = 0;
         // Position PID Gains
         public static final Map<PIDProfile, PIDConfiguration> PID_CONSTANTS = Map.of(

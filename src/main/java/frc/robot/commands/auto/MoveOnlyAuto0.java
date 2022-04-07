@@ -22,7 +22,9 @@ import frc.robot.subsystems.DriveTrain;
 public class MoveOnlyAuto0 extends SequentialCommandGroup {
   private static final double VELOCITY = 0.5;
   private static final double ACCEL = 0.5;
-  private static final double DISTANCE = Units.feetToMeters(6.5);
+  private static final double DISTANCE = Units.feetToMeters(7.4);
+
+  // https://www.desmos.com/calculator/2ojl9yixx7
 
   /** Creates a new MoveOnlyAuto. */
   public MoveOnlyAuto0(DriveTrain driveTrain, Arm arm) {

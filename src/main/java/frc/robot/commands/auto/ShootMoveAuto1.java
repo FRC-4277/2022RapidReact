@@ -24,7 +24,9 @@ import frc.robot.subsystems.DriveTrain;
 public class ShootMoveAuto1 extends SequentialCommandGroup {
   private static final double VELOCITY = 2.0;
   private static final double ACCEL = 2.0;
-  private static final double DISTANCE = Units.feetToMeters(6.5);
+  private static final double DISTANCE = Units.feetToMeters(7.4);
+
+  // https://www.desmos.com/calculator/2ojl9yixx7
 
   /** Creates a new ShootMoveAuto1. */
   public ShootMoveAuto1(DriveTrain driveTrain, CargoManipulator cargoManipulator, Arm arm) {

@@ -187,7 +187,7 @@ public class Climber extends SubsystemBase {
 
   public enum ClimbPosition {
     HOME(0),
-    MAXIMUM(Units.inchesToMeters(13.0));
+    MAXIMUM(Units.inchesToMeters(12.0));
 
     private final double heightMeters;
 

@@ -75,7 +75,7 @@ public class AutoBallPickupCommand extends CommandBase {
     // drive
     double leftSpeed = DRIVE_SPEED;
     double rightSpeed = DRIVE_SPEED; // todo : ADD PHOTON VISION adjustment
-    Optional<Double> ballDegrees = vision.getBallDegrees();
+    /*Optional<Double> ballDegrees = vision.getBallDegrees();
     if (ballDegrees.isPresent()) {
       double degrees = ballDegrees.get();
       if (degrees < 10) {
@@ -83,7 +83,7 @@ public class AutoBallPickupCommand extends CommandBase {
         leftSpeed += adjustment;
         rightSpeed -= adjustment;
       }
-    }
+    }*/
     driveTrain.rawDrive(leftSpeed, rightSpeed);
     // hold arm down && intake
     arm.holdPosition(ArmPosition.DOWN);

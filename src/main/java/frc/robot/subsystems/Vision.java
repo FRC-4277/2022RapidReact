@@ -52,7 +52,7 @@ public class Vision extends SubsystemBase {
 
   public Optional<Double> getBallDegrees() {
     PhotonPipelineResult result = photonCamera.getLatestResult();
-    if (result == null) {
+    if (result == null || !result.hasTargets()) {
       return Optional.empty();
     }
     PhotonTrackedTarget trackedTarget = result.getBestTarget();

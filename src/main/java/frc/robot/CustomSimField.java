@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 
@@ -56,7 +57,6 @@ public class CustomSimField {
                     .forEach(entry -> hideObject(entry.getValue()));
             // Set robot position
             robotStateMap.get(state).setPose(robotPosition);
-
             currentState = state;
         }
     }
@@ -66,6 +66,7 @@ public class CustomSimField {
     }
 
     public void setTrajectory(Trajectory trajectory) {
+        NetworkTableInstance.getDefault().getEntry("/Shuffleboard/Autonomous/Field/trajectory").delete();
         trajectoryDisplay.setTrajectory(trajectory);
     }
 

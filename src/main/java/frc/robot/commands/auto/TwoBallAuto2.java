@@ -24,13 +24,13 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
     private static final double MAX_VELOCITY = 2.0;
     private static final double MAX_ACCEL = 0.75;
 
-    // https://www.desmos.com/calculator/cl6u6ckvkj
+    // https://www.desmos.com/calculator/ts2n4y8vm9
 
     private final Map<Cargo, Pose2d> STARTING_POSITIONS =
         Map.of(
             Cargo.A, new Pose2d(7.64, 1.986, new Rotation2d(4.712)),
             Cargo.B, new Pose2d(6.84, 2.89, new Rotation2d(3.57)),
-            Cargo.D, new Pose2d(6.6131, 5.063, new Rotation2d(2.38))
+            Cargo.D, new Pose2d(6.131, 5.063, new Rotation2d(2.38))
         );
 
     private final Map<Cargo, Translation2d> PICKUP_POSITIONS =
@@ -43,8 +43,8 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
     private final Map<Cargo, Double> PICKUP_DISTANCE =
         Map.of(
             Cargo.A, 1.3 - Units.inchesToMeters(34.5),
-            Cargo.B, 1.5,
-            Cargo.D, 1.5
+            Cargo.B, 0.75,
+            Cargo.D, 0.75
         );
 
     private final Map<Cargo, Pose2d> BEFORE_SHOOT_POSITIONS =
@@ -58,7 +58,7 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
         Map.of(
             Cargo.A, new Pose2d(7.72, 2.82, new Rotation2d(1.1906147)),
             Cargo.B, new Pose2d(7.72, 2.82, new Rotation2d(1.1906147)),
-            Cargo.D, new Pose2d(6.99, 4.59, new Rotation2d(5.8708))
+            Cargo.D, new Pose2d(6.86, 4.33, new Rotation2d(5.8708))
         );
 
     public TwoBallAuto2(CargoManipulator cargoManipulator, DriveTrain driveTrain, Arm arm, Cargo cargo, Vision vision) {
@@ -70,11 +70,6 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
         // Have ending velocity be intake driving speed
         config.setEndVelocity(DriveTrain.convertPercentToVelocity(AutoBallPickupCommand.DRIVE_SPEED));
         Trajectory pickupTrajectory = TrajectoryUtil.generateTrajectory(startingPosition, pickupPosition, config);
-
-        System.out.println(pickupPosition);
-
-        TrajectoryConfig backConfig = TrajectoryUtil.createConfig(3, 2);
-        backConfig.addConstraint(new CentripetalAccelerationConstraint(.5));
 
         addCommands(
             // Reset odometry
@@ -101,7 +96,8 @@ public class TwoBallAuto2 extends SequentialCommandGroup {
                     }, false),
                     // Drive forwards to shoot position
                     new LazyRamseteCommand(driveTrain, () -> {
-                        var config1 = TrajectoryUtil.createConfig(MAX_VELOCITY, MAX_ACCEL);
+                        // make sure not too low or else it won't turn properly
+                        var config1 = TrajectoryUtil.createConfig(2.0, 1.0);
                         return TrajectoryUtil.generateTrajectory(driveTrain.getPose(), SHOOT_POSITIONS.get(cargo), config1);
                     })
                 ),

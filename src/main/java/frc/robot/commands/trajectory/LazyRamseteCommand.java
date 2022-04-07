@@ -5,8 +5,11 @@
 package frc.robot.commands.trajectory;
 
 import edu.wpi.first.math.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
+import frc.robot.CustomSimField;
+import frc.robot.RobotContainer;
 import frc.robot.subsystems.DriveTrain;
 
 import java.util.function.Supplier;
@@ -38,7 +41,8 @@ public class LazyRamseteCommand extends CommandBase {
   @Override
   public void execute() {
     if (ramseteCommand == null) {
-      ramseteCommand = new CustomRamseteCommand(driveTrain, trajectorySupplier.get(), false);
+      Trajectory trajectory = trajectorySupplier.get();
+      ramseteCommand = new CustomRamseteCommand(driveTrain, trajectory, false);
       ramseteCommand.initialize();
       return;
     }

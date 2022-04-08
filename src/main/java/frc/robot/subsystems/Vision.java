@@ -8,6 +8,7 @@ import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.HttpCamera;
 import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -32,15 +33,17 @@ public class Vision extends SubsystemBase {
     // Set Photon to driver mode
     setDriverMode(true);
 
-    UsbCamera camera = CameraServer.startAutomaticCapture();
-    camera.setResolution(320, 240);
-    camera.setFPS(10);
+    if (RobotBase.isReal()) {
+      UsbCamera camera = CameraServer.startAutomaticCapture();
+      camera.setResolution(320, 240);
+      camera.setFPS(10);
 
-    // Add camera to main tab
-    this.driverTab.add("Photon Vision", camera)
-    .withWidget(BuiltInWidgets.kCameraStream)
-    .withPosition(0, 0)
-    .withSize(5, 4);
+      // Add camera to main tab
+      this.driverTab.add("Photon Vision", camera)
+      .withWidget(BuiltInWidgets.kCameraStream)
+      .withPosition(0, 0)
+      .withSize(5, 4);
+    }
   }
 
   public void setDriverMode(boolean driverMode) {

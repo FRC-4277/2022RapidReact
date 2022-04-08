@@ -41,7 +41,7 @@ public class FourBallAuto4 extends SequentialCommandGroup {
     private static final Pose2d INTERMEDIATE_TWO_POSE = new Pose2d(7.8, 1.4, new Rotation2d(Math.PI/2));
     private static final Pose2d INTERMEDIATE_THREE_POSE = new Pose2d(8.18, 1.4, new Rotation2d(2.9));
     // Shooting position 2 (a little more left)
-    private static final Pose2d SHOOTING_POSE_2 = new Pose2d(7.544, 2.832, new Rotation2d(1.3));
+    private static final Pose2d SHOOTING_POSE_2 = new Pose2d(7.7, 2.827, new Rotation2d(1.1906));
 
     // https://www.desmos.com/calculator/i7bwshyg4t
 
@@ -104,7 +104,7 @@ public class FourBallAuto4 extends SequentialCommandGroup {
                 new CargoIntakeCommand(cargoManipulator)
             ),
             // Shoot
-            new CargoShootCommand(cargoManipulator).withTimeout(0.55),
+            new CargoShootCommand(cargoManipulator).withTimeout(0.4),
             // Drive back to intermediate 2 w/ arm down & pickup
             new ParallelDeadlineGroup(
                 new SequentialCommandGroup(
@@ -124,7 +124,7 @@ public class FourBallAuto4 extends SequentialCommandGroup {
             // Drive back to intermediate 3
             new ParallelDeadlineGroup(
                 new LazyRamseteCommand(driveTrain, () -> {
-                    TrajectoryConfig config1 = TrajectoryUtil.createConfig(4.0, 2.5, true);
+                    TrajectoryConfig config1 = TrajectoryUtil.createConfig(4.0, 3.0, true);
                     //config1.setEndVelocity(1.5);
                     return TrajectoryUtil.generateTrajectory(driveTrain.getPose(),
                             List.of(new Translation2d(5.32,1.7)),
@@ -137,7 +137,7 @@ public class FourBallAuto4 extends SequentialCommandGroup {
             new ParallelDeadlineGroup(
                     new LazyRamseteCommand(driveTrain, () -> {
                         TrajectoryConfig config1 = TrajectoryUtil.createConfig(4.0, 3.0);
-                        config1.setEndVelocity(1.5);
+                        config1.setEndVelocity(1.75);
                         return TrajectoryUtil.generateTrajectory(driveTrain.getPose(), SHOOTING_POSE_2, config1);
                     }),
                 new CargoIntakeCommand(cargoManipulator),

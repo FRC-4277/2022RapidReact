@@ -104,7 +104,7 @@ public class FourBallAuto4 extends SequentialCommandGroup {
                 new CargoIntakeCommand(cargoManipulator)
             ),
             // Shoot
-            new CargoShootCommand(cargoManipulator).withTimeout(0.40),
+            new CargoShootCommand(cargoManipulator).withTimeout(0.55),
             // Drive back to intermediate 2 w/ arm down & pickup
             new ParallelDeadlineGroup(
                 new SequentialCommandGroup(

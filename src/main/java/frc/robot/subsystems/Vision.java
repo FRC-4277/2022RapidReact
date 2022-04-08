@@ -4,7 +4,9 @@
 
 package frc.robot.subsystems;
 
+import edu.wpi.first.cameraserver.CameraServer;
 import edu.wpi.first.cscore.HttpCamera;
+import edu.wpi.first.cscore.UsbCamera;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
@@ -18,9 +20,9 @@ import java.util.Optional;
 
 public class Vision extends SubsystemBase {
   private static final String PHOTON_CAMERA_NAME = "Driver Camera";
-  private final PhotonCamera photonCamera = new PhotonCamera(PHOTON_CAMERA_NAME);
+  /*private final PhotonCamera photonCamera = new PhotonCamera(PHOTON_CAMERA_NAME);
   private final HttpCamera httpCamera = new HttpCamera("Driver Camera-output",
-          "http://10.42.77.12:1182/stream.mjpg");
+          "http://10.42.77.12:1182/stream.mjpg");*/
   private final ShuffleboardTab driverTab;
 
   /** Creates a new Vision. */
@@ -30,28 +32,32 @@ public class Vision extends SubsystemBase {
     // Set Photon to driver mode
     setDriverMode(true);
 
+    UsbCamera camera = CameraServer.startAutomaticCapture();
+    camera.setResolution(320, 240);
+    camera.setFPS(10);
+
     // Add camera to main tab
-    this.driverTab.add("Photon Vision", httpCamera)
+    this.driverTab.add("Photon Vision", camera)
     .withWidget(BuiltInWidgets.kCameraStream)
     .withPosition(0, 0)
     .withSize(5, 4);
   }
 
   public void setDriverMode(boolean driverMode) {
-    photonCamera.setDriverMode(driverMode);
+    //photonCamera.setDriverMode(driverMode);
   }
 
   public void setPipeline() {
-    DriverStation.Alliance alliance = DriverStation.getAlliance();
+    /*DriverStation.Alliance alliance = DriverStation.getAlliance();
     if (alliance == DriverStation.Alliance.Red) {
       photonCamera.setPipelineIndex(0);
     } else {
       photonCamera.setPipelineIndex(1);
-    }
+    }*/
   }
 
   public Optional<Double> getBallDegrees() {
-    PhotonPipelineResult result = photonCamera.getLatestResult();
+    /*PhotonPipelineResult result = photonCamera.getLatestResult();
     if (result == null || !result.hasTargets()) {
       return Optional.empty();
     }
@@ -61,7 +67,8 @@ public class Vision extends SubsystemBase {
     }
     double yaw = trackedTarget.getYaw();
     SmartDashboard.putNumber("Photon Yaw", yaw);
-    return Optional.of(yaw);
+    return Optional.of(yaw);*/
+    return Optional.empty();
   }
 
   @Override

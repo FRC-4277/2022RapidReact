@@ -22,7 +22,7 @@ import static frc.robot.Constants.Arm.*;
 
 public class Arm extends SubsystemBase {
   public static final double SPEED = 0.35; // Speed to move the arm manually
-  public static final double SLOW_SPEED = 0.25; // Speed to move "slowly"
+  public static final double SLOW_SPEED = 0.35; // Speed to move "slowly"
   public static final double SLOW_ZONE_DEGREES = 10; // Slow down within <x> degrees of end, when going down
   public static final double DEGREES_THRESHOLD = 5.0; // Degrees away from a position to be considered at the position
   public static final double LIMIT_SWITCH_ZONE_DEGREES = 15; // Degrees of zone to allow limit switch to zero

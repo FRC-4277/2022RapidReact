@@ -56,7 +56,7 @@ public class Constants {
         public static final int TALON_UNITS_PER_REV = 2048; // TalonFX integrated encoder
         public static final int GEARING = 48 * 5; // 48 (4:3:3) from MAXPlanetary gearbox, 5 (12:60) from sprockets
         // Arm Setpoint
-        public static final double DESIRED_DEGREES = 81; // 68.37 in robot CAD
+        public static final double DESIRED_DEGREES = 86; // 68.37 in robot CAD
         public static final double DESIRED_ROTATIONS = DESIRED_DEGREES / 360;
         // Position PID Gains
         public static final double UP_PID_P = 0.04;

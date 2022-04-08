@@ -34,8 +34,8 @@ public class ArmFirstDownCommand extends CommandBase {
     // Create motion profile from current position to down position (0)
     TrapezoidProfile.State start = arm.getTrapezoidState();
     // Have the end position be a few degrees above 0 just in case the arm isn't in perfect start position
-    TrapezoidProfile.State end = new TrapezoidProfile.State(Math.toRadians(Arm.SLOW_ZONE_DEGREES / 2), 0);
-    trapezoidProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(6, 3), end, start);
+    TrapezoidProfile.State end = new TrapezoidProfile.State(0, 0);
+    trapezoidProfile = new TrapezoidProfile(new TrapezoidProfile.Constraints(6.5, 3), end, start);
 
     timer = new Timer();
     timer.reset();
@@ -45,12 +45,16 @@ public class ArmFirstDownCommand extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+
+    System.out.println("TIMER: " + timer.get());
+    System.out.println("TOTAL TIME:" + trapezoidProfile.totalTime());
     if (timer.get() <= trapezoidProfile.totalTime()) {
       // Use trapezoid profile
       TrapezoidProfile.State state = trapezoidProfile.calculate(timer.get());
       arm.moveToState(ArmPosition.DOWN, state);
     } else {
       // Trapezoid profile done, now just hold at bottom
+      System.out.println("DOWN HOLD");
       arm.holdPosition(ArmPosition.DOWN);
     }
   }

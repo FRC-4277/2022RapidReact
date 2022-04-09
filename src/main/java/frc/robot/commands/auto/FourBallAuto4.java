@@ -41,7 +41,7 @@ public class FourBallAuto4 extends SequentialCommandGroup {
     private static final Pose2d INTERMEDIATE_TWO_POSE = new Pose2d(7.8, 1.4, new Rotation2d(Math.PI/2));
     private static final Pose2d INTERMEDIATE_THREE_POSE = new Pose2d(8.18, 1.4, new Rotation2d(2.9));
     // Shooting position 2 (a little more left)
-    private static final Pose2d SHOOTING_POSE_2 = new Pose2d(7.5,2.847, new Rotation2d(1.3));
+    private static final Pose2d SHOOTING_POSE_2 = new Pose2d(7.46,2.656, new Rotation2d(1.3));
 
     // https://www.desmos.com/calculator/jcyog1eube
 
@@ -71,10 +71,10 @@ public class FourBallAuto4 extends SequentialCommandGroup {
             // Initialize vision
             new VisionConfigureForAutoCommand(vision),
             // Timer start,
-            new InstantCommand(() -> {
+            /*new InstantCommand(() -> {
                 timer.reset();
                 timer.start();
-            }),
+            }),*/
             // Move arm all the way down
             new ParallelDeadlineGroup(
                 new ParallelDeadlineGroup(
@@ -137,14 +137,14 @@ public class FourBallAuto4 extends SequentialCommandGroup {
             new ParallelDeadlineGroup(
                     new LazyRamseteCommand(driveTrain, () -> {
                         TrajectoryConfig config1 = TrajectoryUtil.createConfig(4.0, 3.0);
-                        config1.setEndVelocity(1.75);
+                        config1.setEndVelocity(1.25);
                         return TrajectoryUtil.generateTrajectory(driveTrain.getPose(), SHOOTING_POSE_2, config1);
                     }),
                 new CargoIntakeCommand(cargoManipulator),
                 new ArmHoldPositionCommand(arm, Arm.ArmPosition.UP)
             ),
             // Shoot & display time at shoot,
-            new InstantCommand(() -> SmartDashboard.putNumber("Auto Shoot Time", timer.get())),
+            //new InstantCommand(() -> SmartDashboard.putNumber("Auto Shoot Time", timer.get())),
             new CargoShootCommand(cargoManipulator)
         );
     }

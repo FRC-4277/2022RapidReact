@@ -46,15 +46,15 @@ public class ArmFirstDownCommand extends CommandBase {
   @Override
   public void execute() {
 
-    System.out.println("TIMER: " + timer.get());
-    System.out.println("TOTAL TIME:" + trapezoidProfile.totalTime());
+    //System.out.println("TIMER: " + timer.get());
+    //System.out.println("TOTAL TIME:" + trapezoidProfile.totalTime());
     if (timer.get() <= trapezoidProfile.totalTime()) {
       // Use trapezoid profile
       TrapezoidProfile.State state = trapezoidProfile.calculate(timer.get());
       arm.moveToState(ArmPosition.DOWN, state);
     } else {
       // Trapezoid profile done, now just hold at bottom
-      System.out.println("DOWN HOLD");
+      //System.out.println("DOWN HOLD");
       arm.holdPosition(ArmPosition.DOWN);
     }
   }

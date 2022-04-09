@@ -81,7 +81,7 @@ public class RobotContainer {
     private final ArmManualHoldCommand armManualHoldUpCommand = new ArmManualHoldCommand(arm, ArmDirection.UP);
     private final ArmManualHoldCommand armManualHoldDownCommand = new ArmManualHoldCommand(arm, ArmDirection.DOWN);
     /* Ball commands */
-    private final CargoIntakeCommand cargoIntakeCommand = new CargoIntakeCommand(cargoManipulator);
+    private final CargoIntakeCommand cargoIntakeCommand = new CargoIntakeCommand(cargoManipulator, 1.0);
     private final CargoShootCommand cargoShootCommand = new CargoShootCommand(cargoManipulator);
     /* Climber commands */
     private final ClimberManualMoveCommand climberManualUpCommand =
@@ -167,11 +167,11 @@ public class RobotContainer {
         JoystickButton backButton = new JoystickButton(xboxController, XboxController.Button.kBack.value);
         backButton.whenHeld(new ParallelCommandGroup(
             new ArmMoveToCommand(arm, ArmPosition.DOWN),
-            new CargoIntakeCommand(cargoManipulator)
+            new CargoIntakeCommand(cargoManipulator, 1.0)
         ));
         backButton.whenReleased(new ParallelCommandGroup(
             new ArmMoveToCommand(arm, ArmPosition.UP),
-            new ProxyScheduleCommand(new CargoIntakeCommand(cargoManipulator))
+            new ProxyScheduleCommand(new CargoIntakeCommand(cargoManipulator, 0.75))
         ));
     }
 

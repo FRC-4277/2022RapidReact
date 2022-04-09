@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ProxyScheduleCommand;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import edu.wpi.first.wpilibj2.command.button.POVButton;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -171,7 +172,10 @@ public class RobotContainer {
         ));
         backButton.whenReleased(new ParallelCommandGroup(
             new ArmMoveToCommand(arm, ArmPosition.UP),
-            new ProxyScheduleCommand(new CargoIntakeCommand(cargoManipulator, 0.75))
+            new ProxyScheduleCommand(new SequentialCommandGroup(
+                new CargoIntakeCommand(cargoManipulator, 1.0).withTimeout(1.0),
+                new CargoIntakeCommand(cargoManipulator, 0.5)
+            ))
         ));
     }
 
